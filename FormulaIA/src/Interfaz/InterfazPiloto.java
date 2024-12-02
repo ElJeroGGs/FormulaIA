@@ -1,22 +1,37 @@
 package Interfaz;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Scanner;
 
-public class InterfazPiloto {
+import Socket.Cliente;
 
-    public InterfazPiloto() {
+public class InterfazPiloto {
+    private DataOutputStream salidaServidor;
+    private Cliente cliente;
+
+    public InterfazPiloto(DataOutputStream salidaServidor) {
+        this.salidaServidor = salidaServidor;
     }
 
     public void MenuPiloto() {
-        System.out.println("1. Ver estado del coche");
-        System.out.println("2. Ver estado de las ruedas");
-        System.out.println("3. Cambiar ruedas");
-        System.out.println("4. Salir");
+        System.out.println("Presiona cualquier tecla para solicitar un cambio de llantas");
 
         Scanner sc = new Scanner(System.in);
-        int opcion = sc.nextInt();
-        
+        sc.nextLine(); // Espera a que el usuario presione una tecla
+
+        solicitarCambioLlantas();
     }
 
+    public void solicitarCambioLlantas() {
+        System.out.println("Solicitando cambio de llantas al mecanico...");
 
+        try {
+            salidaServidor.writeUTF("cambio de llantas");
+        } catch (IOException e) {
+            System.out.println("Error al enviar la solicitud: " + e.getMessage());
+        }
+    
+        
+    }
 }

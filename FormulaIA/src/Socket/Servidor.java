@@ -52,6 +52,10 @@ public class Servidor extends Conexion implements Runnable {
             String mensaje;
             while ((mensaje = in.readLine()) != null) {
                 System.out.println("Mensaje recibido: " + mensaje);
+                if (mensaje.equalsIgnoreCase("solicitando cambio de llantas")) {
+                    System.out.println("Procesando solicitud de cambio de llantas...");
+                    // Aquí puedes agregar la lógica para manejar la solicitud de cambio de llantas
+                }
                 out.writeBytes("Mensaje recibido\n");
             }
 

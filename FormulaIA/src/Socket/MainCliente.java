@@ -14,7 +14,7 @@ public class MainCliente
 
         System.out.println("Iniciando cliente\n");
         //Instanciamos el agente piloto
-        piloto Pil = new piloto();
+        piloto Pil = new piloto(cli.salidaServidor);
 
         cli.startClient(); //Se inicia el cliente
 

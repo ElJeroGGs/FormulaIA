@@ -21,24 +21,13 @@ public class Cliente extends Conexion {
     }
 //prueba de commiting
     public void startClient() {
-        InterfazPiloto Ipiloto = new InterfazPiloto();
+        InterfazPiloto Ipiloto = new InterfazPiloto(this.salidaServidor);
+        
         Ipiloto.MenuPiloto();
-        int ee = 0;
-        try {
-            while (ee < 10) {
-                salidaServidor = new DataOutputStream(cs.getOutputStream());
-
-                Scanner entrada = new Scanner(System.in);
-                System.out.print("Ingrese un mensaje: ");
-                String texto = entrada.nextLine();
-
-                salidaServidor.writeUTF(texto);
-                ee++;
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
     }
+    //Metodo para comprobar que no se ha solicitado cambio de llantas
+    
+    
 
     public void cerrarConexion() {
         try {
