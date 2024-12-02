@@ -19,7 +19,7 @@ public class Cliente extends Conexion {
     public Cliente() throws IOException {
         super("cliente");
     }
-//prueba de commit
+//prueba de commiting
     public void startClient() {
         InterfazPiloto Ipiloto = new InterfazPiloto();
         Ipiloto.MenuPiloto();
