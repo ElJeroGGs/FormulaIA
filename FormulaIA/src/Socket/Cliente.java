@@ -11,27 +11,38 @@ package Socket;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Scanner;
-
-import Interfaz.InterfazPiloto;
-
+import Agentes.piloto;
 
 public class Cliente extends Conexion {
     public Cliente() throws IOException {
         super("cliente");
     }
-//prueba de commiting
-    public void startClient() {
-        InterfazPiloto Ipiloto = new InterfazPiloto(this.salidaServidor);
-        
-        Ipiloto.MenuPiloto();
+
+    public void startClient(piloto p) {
+        try {
+            DataOutputStream salidaServidor = new DataOutputStream(cs.getOutputStream());
+            piloto pilotoAgente = p;
+
+            System.out.println("prueba1");
+            // Ejecutar el comportamiento del piloto en un nuevo hilo
+            
+            pilotoAgente.setup();
+
+            // Esperar un tiempo para permitir que el comportamiento se ejecute
+            Thread.sleep(5000); // Ajusta el tiempo según sea necesario
+
+        } catch (IOException | InterruptedException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            cerrarConexion();
+        }
     }
-    //Metodo para comprobar que no se ha solicitado cambio de llantas
-    
-    
 
     public void cerrarConexion() {
         try {
-            cs.close();
+            if (cs != null && !cs.isClosed()) {
+                cs.close();
+            }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

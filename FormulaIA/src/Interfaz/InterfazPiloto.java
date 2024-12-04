@@ -24,7 +24,7 @@ public class InterfazPiloto {
     }
 
     public void solicitarCambioLlantas() {
-        System.out.println("Solicitando cambio de llantas al mecanico...");
+        //Solicita cambio de llantas
 
         try {
             salidaServidor.writeUTF("cambio de llantas");

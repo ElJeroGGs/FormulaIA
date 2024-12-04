@@ -31,8 +31,8 @@ public class MainServidor
         System.out.println("Iniciando servidor\n");
 
 //Instanciamos la GUI de los agentes
-String[] args1 = {"-gui"};
-jade.Boot.main(args1);
+//String[] args1 = {"-gui"};
+//jade.Boot.main(args1);
 
         //Se inicia el servidor
         serv.startServer();

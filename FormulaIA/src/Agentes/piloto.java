@@ -7,7 +7,6 @@ import java.io.IOException;
 
 public class piloto extends Agent {
     private DataOutputStream salidaServidor;
-    private String nombre;
 
     // Constructor para inicializar el DataOutputStream
     public piloto(DataOutputStream salidaServidor) {
@@ -15,11 +14,12 @@ public class piloto extends Agent {
     }
 
     // Comportamiento para solicitar un cambio de llantas al mecanico
-    class Comportamiento extends Behaviour {
+    public class Comportamiento extends Behaviour {
+        
         public void action() {
             System.out.println("Solicitar cambio de llantas al mecanico");
             try {
-                salidaServidor.writeUTF("cambio de llantas");
+                salidaServidor.writeUTF("solicitando cambio de llantas");
             } catch (IOException e) {
                 System.out.println("Error al enviar la solicitud: " + e.getMessage());
             }
@@ -30,7 +30,10 @@ public class piloto extends Agent {
         }
     }
 
-    protected void setup() {
+    public void setup() {
+        System.out.println("agente iniciado");
         addBehaviour(new Comportamiento());
+
+
     }
 }

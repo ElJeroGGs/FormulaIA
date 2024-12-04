@@ -15,16 +15,15 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class Servidor extends Conexion implements Runnable {
-    private Socket clientSocket;
+    
 
     public Servidor() throws IOException {
         super("servidor");
     }
 
-    // Constructor para manejar la conexión del cliente
     public Servidor(Socket socket) throws IOException {
-        super("servidor");
-        this.clientSocket = socket;
+        super("servidorhilo");
+        this.cs = socket;
     }
 
     public void startServer() {
@@ -32,36 +31,49 @@ public class Servidor extends Conexion implements Runnable {
             System.out.println("Esperando...");
 
             while (true) {
-                clientSocket = ss.accept();
+                cs = ss.accept();
                 System.out.println("Cliente en línea");
 
                 // Crear un nuevo hilo para manejar la conexión del cliente
-                new Thread(new Servidor(clientSocket)).start();
+                new Thread(new Servidor(cs)).start();
             }
         } catch (IOException e) {
             System.out.println("Error en el servidor: " + e.getMessage());
+        } finally {
+            try {
+                if (ss != null && !ss.isClosed()) {
+                    ss.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error al cerrar el servidor: " + e.getMessage());
+            }
         }
     }
 
     @Override
     public void run() {
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+             DataOutputStream out = new DataOutputStream(cs.getOutputStream())) {
 
             String mensaje;
             while ((mensaje = in.readLine()) != null) {
                 System.out.println("Mensaje recibido: " + mensaje);
-                if (mensaje.equalsIgnoreCase("solicitando cambio de llantas")) {
+                if (mensaje.equalsIgnoreCase("cambio de llantas")) {
                     System.out.println("Procesando solicitud de cambio de llantas...");
                     // Aquí puedes agregar la lógica para manejar la solicitud de cambio de llantas
                 }
                 out.writeBytes("Mensaje recibido\n");
             }
-
-            clientSocket.close();
         } catch (IOException e) {
             System.out.println("Error en el manejo del cliente: " + e.getMessage());
+        } finally {
+            try {
+                if (cs != null && !cs.isClosed()) {
+                    cs.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
+            }
         }
     }
 }
