@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
+import Agentes.piloto;
 import jade.domain.df;
 
 public class Cliente extends Conexion implements Runnable {
