@@ -4,34 +4,43 @@ package Socket;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
+import java.io.DataInputStream;
 /**
  *
  * @author Eduardo
  */
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Scanner;
-import Agentes.piloto;
 
-public class Cliente extends Conexion {
+import jade.domain.df;
+
+public class Cliente extends Conexion implements Runnable {
     public Cliente() throws IOException {
         super("cliente");
     }
 
-    public void startClient(piloto p) {
+    public void startClient() {
         try {
-            DataOutputStream salidaServidor = new DataOutputStream(cs.getOutputStream());
-            piloto pilotoAgente = p;
-
-            System.out.println("prueba1");
-            // Ejecutar el comportamiento del piloto en un nuevo hilo
+            salidaServidor = new DataOutputStream(cs.getOutputStream());
+            salidaCliente = new DataOutputStream(cs.getOutputStream());
+            new Thread(this).start();
             
-            pilotoAgente.setup();
+    
 
-            // Esperar un tiempo para permitir que el comportamiento se ejecute
-            Thread.sleep(5000); // Ajusta el tiempo según sea necesario
+            //cerrarConexion();
 
-        } catch (IOException | InterruptedException e) {
+            // Esperar a que el servidor conteste el mensaje
+            DataInputStream in = new DataInputStream(cs.getInputStream());
+
+            String mensaje;
+            while ((mensaje = in.readUTF()) != null) {
+                System.out.println("Mensaje recibido: " + mensaje);
+            
+                salidaCliente.writeUTF("Mensaje recibido\n");
+            }
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         } finally {
             cerrarConexion();
@@ -46,5 +55,13 @@ public class Cliente extends Conexion {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    @Override
+    public void run() {
+
+        piloto pilotoAgente = new piloto(salidaServidor,cs);
+            
+            pilotoAgente.run();
     }
 }

@@ -2,8 +2,6 @@ package Socket;
 
 import java.io.IOException;
 
-import Agentes.piloto;
-
 
 public class MainCliente
 {
@@ -14,10 +12,10 @@ public class MainCliente
 
         System.out.println("Iniciando cliente\n");
         //Instanciamos el agente piloto
-        piloto Pil = new piloto(cli.salidaServidor);
-        Pil.setup();
+       
 
-        cli.startClient(Pil); //Se inicia el cliente
+        cli.startClient(); //Se inicia el cliente
+
 
         //Instanciamos la GUI del agente
 

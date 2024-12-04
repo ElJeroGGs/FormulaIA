@@ -9,6 +9,7 @@ package Socket;
  * @author Eduardo
  */
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,10 +22,7 @@ public class Servidor extends Conexion implements Runnable {
         super("servidor");
     }
 
-    public Servidor(Socket socket) throws IOException {
-        super("servidorhilo");
-        this.cs = socket;
-    }
+    
 
     public void startServer() {
         try {
@@ -34,8 +32,34 @@ public class Servidor extends Conexion implements Runnable {
                 cs = ss.accept();
                 System.out.println("Cliente en línea");
 
-                // Crear un nuevo hilo para manejar la conexión del cliente
-                new Thread(new Servidor(cs)).start();
+                
+                try  {
+   
+                    salidaCliente = new DataOutputStream(cs.getOutputStream());
+                    salidaCliente.writeUTF("Petición recibida y aceptada");
+            //BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+    DataInputStream in = new DataInputStream(cs.getInputStream());
+
+               String mensaje;
+               while ((mensaje = in.readUTF()) != null) {
+                   System.out.println("Mensaje recibido: " + mensaje);
+                   if (mensaje.contains("cambio de llantas")) {
+                       System.out.println("Procesando solicitud de cambio de llantas...");
+                       // Aquí puedes agregar la lógica para manejar la solicitud de cambio de llantas
+                   }
+                   salidaCliente.writeBytes("Mensaje recibido\n");
+               }
+           } catch (IOException e) {
+               System.out.println("Error en el manejo del cliente: " + e.getMessage());
+           } finally {
+               try {
+                   if (cs != null && !cs.isClosed()) {
+                       cs.close();
+                   }
+               } catch (IOException e) {
+                   System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
+               }
+           }
             }
         } catch (IOException e) {
             System.out.println("Error en el servidor: " + e.getMessage());
