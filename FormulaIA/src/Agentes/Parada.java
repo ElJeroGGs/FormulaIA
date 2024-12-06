@@ -1,6 +1,6 @@
 package Agentes;
 
-import java.util.function.Predicate;
+import jade.content.Predicate;
 
 public class Parada implements Predicate{
 
@@ -18,9 +18,6 @@ public class Parada implements Predicate{
 
    
 
-    @Override
-    public boolean test(Object o) {
-        return false;
-    }
+  
 
 }

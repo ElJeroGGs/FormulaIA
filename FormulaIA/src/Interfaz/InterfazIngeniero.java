@@ -3,6 +3,9 @@ package Interfaz;
 import javax.swing.*;
 import javax.xml.crypto.Data;
 
+import Agentes.Ingeniero_pista;
+import jade.core.AID;
+
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,8 +17,13 @@ public class InterfazIngeniero extends JFrame {
     private JLabel pronosticoCarreraLabel;
     private DataOutputStream salidaServidor;
     private InterfazMecanico interfazMecanico;
+    private Ingeniero_pista ingeniero_pista;
+    
 
     public InterfazIngeniero(DataOutputStream ss) {
+    
+       
+        
         this.salidaServidor = ss;
         setTitle("Interfaz Ingeniero");
         setSize(400, 300);
@@ -61,6 +69,8 @@ public class InterfazIngeniero extends JFrame {
         panelPrincipal.add(prepararPitstop);
 
         add(panelPrincipal, BorderLayout.CENTER);
+
+        
     }
 
     public void setInterfazMecanico(InterfazMecanico interfazMecanico) {
@@ -73,6 +83,7 @@ public class InterfazIngeniero extends JFrame {
         System.out.println("Llamando a los mecánicos");
         interfazMecanico.agregarSolicitud("solicitud de pitstop");
       
+        //this.ingeniero_pista.start();
     }
 
     // Método para actualizar los mensajes del piloto
@@ -93,5 +104,9 @@ public class InterfazIngeniero extends JFrame {
     // Método para actualizar el pronóstico de la carrera
     public void actualizarPronosticoCarrera(String pronostico) {
         pronosticoCarreraLabel.setText(pronostico);
+    }
+
+    public void setIngeniero (Ingeniero_pista ingeniero_pista){
+        this.ingeniero_pista = ingeniero_pista;
     }
 }

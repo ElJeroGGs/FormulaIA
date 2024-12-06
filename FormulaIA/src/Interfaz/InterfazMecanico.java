@@ -9,13 +9,16 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.xml.crypto.Data;
 
+import Agentes.mecanico;
+
 public class InterfazMecanico extends JFrame {
     JTextArea solicitudesArea;
     DataOutputStream salidaServidor;
     InterfazIngeniero iIng;
-
-    public InterfazMecanico(InterfazIngeniero interfazIng) {
-        iIng = interfazIng;
+   
+    public InterfazMecanico() {
+     
+        
         setTitle("Interfaz Mecánico");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,6 +49,8 @@ public class InterfazMecanico extends JFrame {
                 e1.printStackTrace();
             }
         });
+
+    
         
     }
 
@@ -61,6 +66,12 @@ public class InterfazMecanico extends JFrame {
         // Confirmar pitstop con el ingeniero
         iIng.agregarMensajePiloto("Pitstop confirmado");
 }
+
+    public void setInterfazIngeniero(InterfazIngeniero interfazIng) {
+        iIng = interfazIng;
+    }
+
+    
 }
 
   

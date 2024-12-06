@@ -10,10 +10,10 @@ public class PItStopOntology extends Ontology {
     public static final String ONTOLOGY_NAME = "PitStop-ontology";
     public static final String WHEEL_SET = "Juego de Neumaticos";
     public static final String CAMBIAR = "Cambiar";
-    public static final String WHEEL_SET_NAME = "compuesto";
+    public static final String WHEEL_SET_NAME = "nombre";
     public static final String WHEEL_SET_DURATION = "duracion";
-    public static final String CAMBIAR_WHEEL_SET = "Cambiar Juego de Neumaticos";
-    public static final String PARADA = "Parada en Boxes";
+    public static final String CAMBIAR_WHEEL_SET = "_juego";
+    public static final String PARADA = "_juego";
 
 
     

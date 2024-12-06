@@ -25,8 +25,7 @@ public class MainServidor
         
         Servidor serv = new Servidor(); //Se crea el servidor
         //Instanciamos los agentes
-        Ingeniero_pista Ing = new Ingeniero_pista();
-        mecanico Mec = new mecanico();
+       
 
         System.out.println("Iniciando servidor\n");
 

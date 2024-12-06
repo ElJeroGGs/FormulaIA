@@ -17,9 +17,14 @@ import java.net.Socket;
 
 import Interfaz.InterfazIngeniero;
 import Interfaz.InterfazMecanico;
+import jade.wrapper.AgentContainer;
+import jade.wrapper.AgentController;
+import jade.core.*;
+import jade.core.Runtime;
 
 public class Servidor extends Conexion implements Runnable {
-    private InterfazIngeniero interfazIng;
+    private InterfazIngeniero interfazIn;
+    private InterfazMecanico interfazMec;
     
 
     public Servidor() throws IOException {
@@ -36,8 +41,34 @@ public class Servidor extends Conexion implements Runnable {
                 cs = ss.accept();
                 System.out.println("Cliente en línea");
 
+                
+
+
                 salidaServidor = new DataOutputStream(cs.getOutputStream());
                 new Thread(this).start();
+//Creamos los agentes
+try {
+    Runtime rt = Runtime.instance();
+    Profile p = new ProfileImpl();
+    AgentContainer mainContainer = rt.createMainContainer(p);
+    
+   
+    //le pasamos el argumento de la interfaz InterfazMecanico
+    Object[] args = new Object[1];
+    args[0] = this.interfazMec;
+    
+    AgentController Mecanico = mainContainer.createNewAgent("Mecanico", "Agentes.mecanico", args);
+    
+       
+    Mecanico.start();
+    AgentController Ingeniero = mainContainer.createNewAgent("Ingeniero", "Agentes.Ingeniero_pista", null);
+    //le pasamos el argumento de la interfaz
+
+    Ingeniero.start();
+    
+    } catch (Exception e) {
+    }
+
                 // Esperar a que el cliente conteste el mensaje
                 DataInputStream in = new DataInputStream(cs.getInputStream());
 
@@ -48,7 +79,7 @@ public class Servidor extends Conexion implements Runnable {
 
                 if(mensaje.equals("cambio de llantas")){
                     
-                interfazIng.agregarMensajePiloto(mensaje);
+                interfazIn.agregarMensajePiloto(mensaje);
                 }
             
                 
@@ -71,13 +102,23 @@ public class Servidor extends Conexion implements Runnable {
     @Override
     public void run() {
 
+       
+        InterfazMecanico interfazMec = new InterfazMecanico();
+        interfazMec.setVisible(true);
         InterfazIngeniero interfazIng = new InterfazIngeniero(this.salidaCliente);
         interfazIng.setVisible(true);
-        InterfazMecanico interfazMec = new InterfazMecanico(interfazIng);
-        interfazMec.setVisible(true);
+
+        interfazMec.setInterfazIngeniero(interfazIng);
+
         interfazIng.setInterfazMecanico(interfazMec);
-        this.interfazIng = interfazIng;
+
+        this.interfazIn = interfazIng;
+        this.interfazMec = interfazMec;
 
        
+    }
+
+    public void IngRun(){
+
     }
 }
