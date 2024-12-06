@@ -15,7 +15,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+import Interfaz.InterfazIngeniero;
+import Interfaz.InterfazMecanico;
+
 public class Servidor extends Conexion implements Runnable {
+    private InterfazIngeniero interfazIng;
     
 
     public Servidor() throws IOException {
@@ -32,34 +36,24 @@ public class Servidor extends Conexion implements Runnable {
                 cs = ss.accept();
                 System.out.println("Cliente en línea");
 
-                
-                try  {
-   
-                    salidaCliente = new DataOutputStream(cs.getOutputStream());
-                    salidaCliente.writeUTF("Petición recibida y aceptada");
-            //BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream()));
-    DataInputStream in = new DataInputStream(cs.getInputStream());
+                salidaServidor = new DataOutputStream(cs.getOutputStream());
+                new Thread(this).start();
+                // Esperar a que el cliente conteste el mensaje
+                DataInputStream in = new DataInputStream(cs.getInputStream());
 
-               String mensaje;
-               while ((mensaje = in.readUTF()) != null) {
-                   System.out.println("Mensaje recibido: " + mensaje);
-                   if (mensaje.contains("cambio de llantas")) {
-                       System.out.println("Procesando solicitud de cambio de llantas...");
-                       // Aquí puedes agregar la lógica para manejar la solicitud de cambio de llantas
-                   }
-                   salidaCliente.writeBytes("Mensaje recibido\n");
-               }
-           } catch (IOException e) {
-               System.out.println("Error en el manejo del cliente: " + e.getMessage());
-           } finally {
-               try {
-                   if (cs != null && !cs.isClosed()) {
-                       cs.close();
-                   }
-               } catch (IOException e) {
-                   System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
-               }
-           }
+
+            String mensaje;
+            while ((mensaje = in.readUTF()) != null) {
+                System.out.println("Mensaje recibido: " + mensaje);
+
+                if(mensaje.equals("cambio de llantas")){
+                    
+                interfazIng.agregarMensajePiloto(mensaje);
+                }
+            
+                
+            }
+
             }
         } catch (IOException e) {
             System.out.println("Error en el servidor: " + e.getMessage());
@@ -76,28 +70,14 @@ public class Servidor extends Conexion implements Runnable {
 
     @Override
     public void run() {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream()));
-             DataOutputStream out = new DataOutputStream(cs.getOutputStream())) {
 
-            String mensaje;
-            while ((mensaje = in.readLine()) != null) {
-                System.out.println("Mensaje recibido: " + mensaje);
-                if (mensaje.equalsIgnoreCase("cambio de llantas")) {
-                    System.out.println("Procesando solicitud de cambio de llantas...");
-                    // Aquí puedes agregar la lógica para manejar la solicitud de cambio de llantas
-                }
-                out.writeBytes("Mensaje recibido\n");
-            }
-        } catch (IOException e) {
-            System.out.println("Error en el manejo del cliente: " + e.getMessage());
-        } finally {
-            try {
-                if (cs != null && !cs.isClosed()) {
-                    cs.close();
-                }
-            } catch (IOException e) {
-                System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
-            }
-        }
+        InterfazIngeniero interfazIng = new InterfazIngeniero(this.salidaCliente);
+        interfazIng.setVisible(true);
+        InterfazMecanico interfazMec = new InterfazMecanico(interfazIng);
+        interfazMec.setVisible(true);
+        interfazIng.setInterfazMecanico(interfazMec);
+        this.interfazIng = interfazIng;
+
+       
     }
 }

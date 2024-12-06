@@ -28,9 +28,6 @@ public class Cliente extends Conexion implements Runnable {
             salidaCliente = new DataOutputStream(cs.getOutputStream());
             new Thread(this).start();
             
-    
-
-            //cerrarConexion();
 
             // Esperar a que el servidor conteste el mensaje
             DataInputStream in = new DataInputStream(cs.getInputStream());
@@ -61,8 +58,13 @@ public class Cliente extends Conexion implements Runnable {
     @Override
     public void run() {
 
-        piloto pilotoAgente = new piloto(salidaServidor,cs);
-            
-            pilotoAgente.run();
+        try {
+            // Instanciamos la interfaz del piloto
+            Interfaz.InterfazPiloto interfazPiloto = new Interfaz.InterfazPiloto(salidaServidor);
+            //Muestra la interfaz de Piloto
+            interfazPiloto.setVisible(true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
