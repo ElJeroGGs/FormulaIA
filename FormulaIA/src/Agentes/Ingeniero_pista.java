@@ -25,14 +25,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import Interfaz.InterfazIngeniero;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
-import jade.content.onto.Ontology;
 import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
-import jade.lang.acl.ACLMessage;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.DFService;
@@ -43,29 +41,36 @@ public class Ingeniero_pista extends Agent {
     private Codec codec = new SLCodec();
     private Ontology ontologia = PItStopOntology.getInstance();
     private AID idmecanico;
+    private Wheel_set juego;
+    private InterfazIngeniero   interfazIn;
+
+    public void setJuego(Wheel_set juego) {
+        this.juego = juego;
+    }
     
 
     protected void setup() {
         System.out.println("Agente ingeniero_pista iniciado");
 
-        
+        //Buscamos dentro de los argumentos el wheel_set
+        Object[] args = getArguments();
+        if (args != null && args.length > 0) {
+            juego = (Wheel_set) args[0];
+            interfazIn = (InterfazIngeniero) args[1];
+        }
 
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
 
         addBehaviour(new EnviarParadaBehaviour());
+       
     }
 
     private class EnviarParadaBehaviour extends Behaviour {
         private boolean finished = false;
 
         public void action() {
-            // Crear un nuevo set de llantas
-            Wheel_set juego = new Wheel_set();
-            juego.setDuracion(100);
-            juego.setNombre("duros");
-
-           
+            
 
             // Enviar el set de llantas al piloto
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -78,11 +83,27 @@ public class Ingeniero_pista extends Agent {
         Parada parada = new Parada();
         parada.set_juego(juego);
 
+        System.out.println(juego.getNombre());
         
 
             try {
                 getContentManager().fillContent(msg, parada);
                 send(msg);
+
+                 //Una vez que se manda el mensaje, se espera una respuesta
+            
+                MessageTemplate mt = MessageTemplate.and(
+                MessageTemplate.MatchLanguage(codec.getName()),
+                MessageTemplate.MatchOntology(ontologia.getName()));
+                ACLMessage msg2 = blockingReceive(mt); 
+                
+                if (msg2.getPerformative() == ACLMessage.CONFIRM) {
+                    interfazIn.agregarMensajePiloto("Parada confirmada, manda a boxes");
+                    interfazIn.activarBoxes();
+                } else {
+                    block();
+                }
+           
                 finished = true;
             } catch (Codec.CodecException | OntologyException e) {
                 e.printStackTrace();
@@ -91,8 +112,15 @@ public class Ingeniero_pista extends Agent {
 
         public boolean done() {
             return finished;
+            
         }
+
+        //Matamos al agente
+        public int onEnd() {
+            myAgent.doDelete();
+            return super.onEnd();
     }
+}
 
     public void setMecanico(AID idmecanico) {
         this.idmecanico = idmecanico;

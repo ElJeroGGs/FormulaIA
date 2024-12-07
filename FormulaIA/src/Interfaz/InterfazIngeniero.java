@@ -3,12 +3,19 @@ package Interfaz;
 import javax.swing.*;
 import javax.xml.crypto.Data;
 
+import java.awt.event.MouseEvent;
+
 import Agentes.Ingeniero_pista;
+import Agentes.Wheel_set;
 import jade.core.AID;
+import jade.wrapper.AgentController;
+import jade.wrapper.StaleProxyException;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import jade.wrapper.AgentContainer;
 
 public class InterfazIngeniero extends JFrame {
     private JTextArea mensajesPilotoArea;
@@ -17,59 +24,147 @@ public class InterfazIngeniero extends JFrame {
     private JLabel pronosticoCarreraLabel;
     private DataOutputStream salidaServidor;
     private InterfazMecanico interfazMecanico;
-    private Ingeniero_pista ingeniero_pista;
-    
+    private AgentController ingeniero_pista;
+    private String vueltasRestantes = "";
+    private JButton prepararPitstop;
+    private PanelNeumaticos panelNeumaticos;
+    private AgentContainer mainContainer;
+    private JButton confirmarPitstop;
+
+    public void setMainContainer(AgentContainer mainContainer) {
+        this.mainContainer = mainContainer;
+    }
+
 
     public InterfazIngeniero(DataOutputStream ss) {
-    
-       
-        
+
+        Font font = new Font("Arial", Font.BOLD, 20);
         this.salidaServidor = ss;
         setTitle("Interfaz Ingeniero");
-        setSize(400, 300);
+        setSize(750, 790);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        JPanel panelPrincipal = new JPanel(new GridLayout(5, 1));
+        panelPrincipal.setLayout(null);
+        this.setLayout(null);
 
         // Panel para mensajes del piloto
         JPanel panelMensajesPiloto = new JPanel(new BorderLayout());
         mensajesPilotoArea = new JTextArea();
         mensajesPilotoArea.setEditable(false);
+        mensajesPilotoArea.setFont(font);
         panelMensajesPiloto.add(new JScrollPane(mensajesPilotoArea), BorderLayout.CENTER);
-        panelMensajesPiloto.setBorder(BorderFactory.createTitledBorder("Mensajes del Piloto"));
+        JLabel titulo = new JLabel("Mensajes de la carrera");
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        titulo.setFont(font);
+        panelMensajesPiloto.add(titulo, BorderLayout.NORTH);
+        panelMensajesPiloto.setPreferredSize(new Dimension(1000, 200));
+        panelMensajesPiloto.setBounds(0, 0, 250, 375);
+
+        panelPrincipal.add(panelMensajesPiloto);
+        // Etiqueta "Información de la carrera"
+        JLabel infoCarrera = new JLabel("Información de la carrera");
+        infoCarrera.setBounds(370, 320, 500, 50);
+        infoCarrera.setFont(font);
+        panelPrincipal.add(infoCarrera);
+
+        //Etiqueta "estado del coche"
+        JLabel estadoCoche = new JLabel("Estado del coche");
+        estadoCoche.setBounds(15, 400, 500, 50);
+        estadoCoche.setFont(font);
+        panelPrincipal.add(estadoCoche);
+
+        // Panel para estado del coche (imagen)
+        Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_neutro.png");
+        //achicamos la imagen un poco
+        ImageIcon imageIcon = (ImageIcon) icon;
+        imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+        JLabel imagenCoche = new JLabel(icon);
+        
+
+        imagenCoche.setBounds(0, 350, 200, 460);
+    
+        panelPrincipal.add(imagenCoche);
 
         // Panel para vueltas restantes
-        JPanel panelVueltasRestantes = new JPanel(new BorderLayout());
-        vueltasRestantesLabel = new JLabel("Vueltas restantes: vuelta 2/41");
-        panelVueltasRestantes.add(vueltasRestantesLabel, BorderLayout.CENTER);
-        panelVueltasRestantes.setBorder(BorderFactory.createTitledBorder("Vueltas Restantes"));
+        JPanel panelVueltasRestantes = new JPanel(null);
+        vueltasRestantesLabel = new JLabel("Vueltas restantes:"+vueltasRestantes);
+        vueltasRestantesLabel.setAlignmentX(CENTER_ALIGNMENT);
+        vueltasRestantesLabel.setFont(font);
+        vueltasRestantesLabel.setBounds(30, 30, 200, 50);
+        panelVueltasRestantes.add(vueltasRestantesLabel);
+        panelVueltasRestantes.setBounds(250, 355, 450, 70);
+        panelPrincipal.add(panelVueltasRestantes);
 
         // Panel para desgaste de los neumáticos
-        JPanel panelDesgasteNeumaticos = new JPanel(new BorderLayout());
-        desgasteNeumaticosLabel = new JLabel("Desgaste de los neumáticos: 38%");
-        panelDesgasteNeumaticos.add(desgasteNeumaticosLabel, BorderLayout.CENTER);
-        panelDesgasteNeumaticos.setBorder(BorderFactory.createTitledBorder("Desgaste de los Neumáticos"));
+        JPanel panelDesgasteNeumaticos = new JPanel(null);
+        desgasteNeumaticosLabel = new JLabel("Desgaste de los neumáticos:");
+        desgasteNeumaticosLabel.setAlignmentX(CENTER_ALIGNMENT);
+        desgasteNeumaticosLabel.setFont(font);
+        desgasteNeumaticosLabel.setBounds(30, 30, 400, 50);
+        panelDesgasteNeumaticos.add(desgasteNeumaticosLabel);
+        panelDesgasteNeumaticos.setBounds(250, 425, 450, 70);
+        panelPrincipal.add(panelDesgasteNeumaticos);
+
+        // Panel de neumáticos para pits
+        panelNeumaticos = new PanelNeumaticos();
+
+        panelNeumaticos.setSize(500, 380);
+        panelNeumaticos.setBounds(250, 15, 450, 180);
+       
+        panelNeumaticos.setInterfazIngeniero(this);
+        panelPrincipal.add(panelNeumaticos);
 
         // Panel para pronóstico de la carrera
-        JPanel panelPronosticoCarrera = new JPanel(new BorderLayout());
-        pronosticoCarreraLabel = new JLabel("Pronóstico de la carrera: se prevee lluvia ligera");
-        panelPronosticoCarrera.add(pronosticoCarreraLabel, BorderLayout.CENTER);
-        panelPronosticoCarrera.setBorder(BorderFactory.createTitledBorder("Pronóstico de la Carrera"));
+        JPanel panelPronosticoCarrera = new JPanel(null);
+        pronosticoCarreraLabel = new JLabel("Pronóstico:");
+        pronosticoCarreraLabel.setAlignmentX(CENTER_ALIGNMENT);
+        pronosticoCarreraLabel.setFont(font);
+        pronosticoCarreraLabel.setBounds(30, 30, 400, 50);
+        panelPronosticoCarrera.add(pronosticoCarreraLabel);
+        panelPronosticoCarrera.setBounds(250, 495, 450, 70);
+        panelPrincipal.add(panelPronosticoCarrera);
 
         // Botón para preparar pitstop
-        JButton prepararPitstop = new JButton("Preparar Pitstop");
-        prepararPitstop.addActionListener(e -> {
-           llamarMecanicos();});
-
-        // Agregar los paneles al contenedor principal
-        JPanel panelPrincipal = new JPanel(new GridLayout(5, 1));
-        panelPrincipal.add(panelMensajesPiloto);
-        panelPrincipal.add(panelVueltasRestantes);
-        panelPrincipal.add(panelDesgasteNeumaticos);
-        panelPrincipal.add(panelPronosticoCarrera);
+        prepararPitstop = new JButton("Preparar Pitstop");
+        prepararPitstop.setFont(font);
+        prepararPitstop.setBackground(Color.BLACK);
+        prepararPitstop.setForeground(Color.WHITE);
+        prepararPitstop.setBounds(380, 200, 200, 50);
         panelPrincipal.add(prepararPitstop);
+        prepararPitstop.addActionListener(e -> {
+            llamarMecanicos();
+        });
+        //Desactivamos el boton hasta que se seleccione un neumático
+        prepararPitstop.setEnabled(false);
 
-        add(panelPrincipal, BorderLayout.CENTER);
+        //Boton para confirmar pitstop
+        confirmarPitstop = new JButton("Mandar a Boxes");
+        confirmarPitstop.setFont(font);
+        confirmarPitstop.setBackground(Color.BLACK);
+        confirmarPitstop.setForeground(Color.WHITE);
+        confirmarPitstop.setBounds(380, 270, 200, 50);
+        panelPrincipal.add(confirmarPitstop);
 
+    
+        confirmarPitstop.addActionListener(e -> {
+            interfazMecanico.Pits();
+        });
+
+//Hasta que no se active el boton de mandar a boxes no se podra confirmar el pitstop
+        confirmarPitstop.setEnabled(false);
+
+        // Añadimos un borde a toda la ventana
+        // Agregar los paneles al contenedor principal
+
+        panelPrincipal.setBounds(15, 15, 1000, 1000);
+        add(panelPrincipal);
+
+    }
+    public void activarBoton(){
+        prepararPitstop.setEnabled(true);
+    }
+    public void activarBoxes(){
+        confirmarPitstop.setEnabled(true);
         
     }
 
@@ -77,13 +172,28 @@ public class InterfazIngeniero extends JFrame {
         this.interfazMecanico = interfazMecanico;
     }
 
-    private void llamarMecanicos()  {
+    private void llamarMecanicos() {
         // Lógica para llamar a los mecánicos
-       
-        System.out.println("Llamando a los mecánicos");
-        interfazMecanico.agregarSolicitud("solicitud de pitstop");
+        //Obtener el neumático seleccionado
+        Wheel_set ws = panelNeumaticos.getNeumaticosSeleccionados();
+        Object[] args = new Object[2];
+        args[0] = ws;
+        args[1] = this;
+        
       
-        //this.ingeniero_pista.start();
+
+        try {
+            AgentController ingeniero_pista = mainContainer.createNewAgent("Ingeniero", "Agentes.Ingeniero_pista", args);
+        this.ingeniero_pista = ingeniero_pista;
+        } catch (StaleProxyException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            this.ingeniero_pista.start();
+        } catch (StaleProxyException e) {
+            e.printStackTrace();
+        }
     }
 
     // Método para actualizar los mensajes del piloto
@@ -106,7 +216,13 @@ public class InterfazIngeniero extends JFrame {
         pronosticoCarreraLabel.setText(pronostico);
     }
 
-    public void setIngeniero (Ingeniero_pista ingeniero_pista){
+    public void setIngeniero(AgentController ingeniero_pista) {
         this.ingeniero_pista = ingeniero_pista;
+    }
+
+    // Método para probar la interfaz
+    public static void main(String[] args) {
+        InterfazIngeniero interfazIngeniero = new InterfazIngeniero(null);
+        interfazIngeniero.setVisible(true);
     }
 }

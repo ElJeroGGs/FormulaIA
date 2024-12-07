@@ -45,12 +45,13 @@ public class Servidor extends Conexion implements Runnable {
 
 
                 salidaServidor = new DataOutputStream(cs.getOutputStream());
-                new Thread(this).start();
+                new Thread(this).run();
 //Creamos los agentes
 try {
     Runtime rt = Runtime.instance();
     Profile p = new ProfileImpl();
     AgentContainer mainContainer = rt.createMainContainer(p);
+    
     
    
     //le pasamos el argumento de la interfaz InterfazMecanico
@@ -60,11 +61,13 @@ try {
     AgentController Mecanico = mainContainer.createNewAgent("Mecanico", "Agentes.mecanico", args);
     
        
-    Mecanico.start();
-    AgentController Ingeniero = mainContainer.createNewAgent("Ingeniero", "Agentes.Ingeniero_pista", null);
+   
     //le pasamos el argumento de la interfaz
 
-    Ingeniero.start();
+    //Inyectamos los agentes en las interfaces
+    this.interfazMec.setMecanico(Mecanico);
+    Mecanico.start();
+    this.interfazIn.setMainContainer(mainContainer);
     
     } catch (Exception e) {
     }

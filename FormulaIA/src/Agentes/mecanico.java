@@ -64,13 +64,14 @@ public class mecanico extends Agent {
     @Override
     public void action() {
         //Ponemos en "espera al mecanico"
-        interfazMec.agregarSolicitud("Esperando solicitudes");
+        
 
         //Esperamos a recibir un mensaje
         MessageTemplate mt = MessageTemplate.and(
             MessageTemplate.MatchLanguage(codec.getName()),
             MessageTemplate.MatchOntology(ontologia.getName()));
         ACLMessage  msg = blockingReceive(mt);
+        interfazMec.agregarSolicitud("Esperando solicitudes");
 
         try {
  
@@ -86,25 +87,36 @@ public class mecanico extends Agent {
                     // Recibido un INFORM con contenido correcto
                     Parada p = (Parada) ec;
                     Wheel_set ws = p.get_juego();
-                    interfazMec.agregarSolicitud("Mensaje recibido:");
-                    interfazMec.agregarSolicitud("Compuesto: " + ws.getNombre());
-                    interfazMec.agregarSolicitud("Duracion: " + ws.getDuracion());
+                    interfazMec.agregarSolicitud("Solicitud recibida:");
+                    interfazMec.seleccionarNeumaticos(ws.getNombre());
      
                     //Hacemnos una parada
                     Cambiar cambiar = new Cambiar();
                     cambiar.set_juego(ws);
-                    ACLMessage msg2 = new ACLMessage(ACLMessage.REQUEST);
+                    
+
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
                     msg2.setLanguage(codec.getName());
                     msg2.setOntology(ontologia.getName());
                     msg2.setSender(getAID());
-                  
+                    msg2.addReceiver(new AID("Ingeniero", AID.ISLOCALNAME));
+
+                  //Mandamos a la interfaz a confirmar la parada
+                    interfazMec.confirmarParada();
+                    //Mandamos mensaje de confirmación
+                    ACLMessage msg3 = new ACLMessage(ACLMessage.CONFIRM);
+                    msg3.setLanguage(codec.getName());
+                    msg3.setOntology(ontologia.getName());
+                    msg3.setSender(getAID());
+                    msg3.addReceiver(new AID("Ingeniero", AID.ISLOCALNAME));
+                    
+                    
                     
                     try {
-                        getContentManager().fillContent(msg2,cambiar);
-                    send(msg2);
+                        getContentManager().fillContent(msg3,cambiar);
+                    send(msg3);
                     } catch (Exception e) {
-                    }                    
-                    System.out.println("Cambio realizado");
+                    }
                 }
                 else{
                     // Recibido un INFORM con contenido incorrecto
