@@ -15,9 +15,17 @@ import java.io.InputStreamReader;
 import java.util.Scanner;
 
 import Agentes.piloto;
+import Interfaz.InterfazPiloto;
 import jade.domain.df;
 
 public class Cliente extends Conexion implements Runnable {
+
+    private InterfazPiloto interfazPiloto;
+
+    public void setInterfazPiloto(InterfazPiloto interfazPiloto) {
+        this.interfazPiloto = interfazPiloto;
+    }
+
     public Cliente() throws IOException {
         super("cliente");
     }
@@ -34,9 +42,10 @@ public class Cliente extends Conexion implements Runnable {
 
             String mensaje;
             while ((mensaje = in.readUTF()) != null) {
-                System.out.println("Mensaje recibido: " + mensaje);
-            
-                salidaCliente.writeUTF("Mensaje recibido\n");
+                System.out.println(mensaje);
+                if(mensaje.equals("desgaste")){
+                    this.interfazPiloto.setDesgaste();
+                }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -59,10 +68,11 @@ public class Cliente extends Conexion implements Runnable {
     public void run() {
 
         try {
-            // Instanciamos la interfaz del piloto
-            Interfaz.InterfazPiloto interfazPiloto = new Interfaz.InterfazPiloto(salidaServidor);
+            // Instanciamos la interfaz del cliente para instanciar las características de la carrera
+            Interfaz.Cliente interfazCliente = new Interfaz.Cliente(salidaServidor, this);
+            
             //Muestra la interfaz de Piloto
-            interfazPiloto.setVisible(true);
+            
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

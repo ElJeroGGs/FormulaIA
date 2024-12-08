@@ -25,10 +25,18 @@ import javax.swing.JFrame;
 public class PanelNeumaticos extends JPanel {
     private JPanel selectedPanel;
     private InterfazIngeniero iIng;
+    private Interfaz.Cliente clt;
 
     //Metodo para activar boton de preparar pitstop
     public void activarBotonPrepararPitstop(){
         iIng.activarBoton();
+    }
+    public void setCliente(Interfaz.Cliente clt){
+        this.clt = clt;
+    }
+
+    public void activarBoton(){
+        clt.activarBoton();
     }
 
     public void setInterfazIngeniero(InterfazIngeniero iIng){
@@ -98,7 +106,14 @@ public class PanelNeumaticos extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 seleccionarPanel(panel);
-                activarBotonPrepararPitstop();
+                if(iIng != null){
+                    
+                    activarBotonPrepararPitstop();
+                }
+                if(clt != null){
+                    activarBoton();
+                }
+                
             }
         });
 

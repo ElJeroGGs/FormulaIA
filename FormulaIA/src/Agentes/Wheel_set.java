@@ -6,10 +6,18 @@ public class Wheel_set implements Concept{
 
     String nombre;
     int duracion;
+    int duracion_actual;
+
+    double duraciond;
+    double duracion_actuald;
 
     public Wheel_set(String nombre, int duracion) {
         this.nombre = nombre;
         this.duracion = duracion;
+        this.duracion_actual = duracion;
+
+        this.duraciond = duracion;
+        this.duracion_actuald = duracion;
     }
 
     public Wheel_set() {
@@ -29,6 +37,21 @@ public class Wheel_set implements Concept{
 
     public int getDuracion(){
         return duracion;
+    }
+
+    public double getDuraciond(){
+        return duraciond;
+    }
+
+    public double getDesgaste(){
+    //Desgaste entre 0 y 100
+    System.out.println("Duracion actual: " + duracion_actual);
+        return 100 - (duracion_actuald*100)/duraciond;
+        
+    }
+
+    public void setDesgaste(){
+        this.duracion_actuald = duracion_actuald-0.01;
     }
 
 }

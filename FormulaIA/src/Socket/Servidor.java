@@ -78,12 +78,27 @@ try {
 
             String mensaje;
             while ((mensaje = in.readUTF()) != null) {
-                System.out.println("Mensaje recibido: " + mensaje);
 
-                if(mensaje.equals("cambio de llantas")){
+                if(mensaje.contains("desgaste")){
+                    this.interfazIn.actualizarDesgasteNeumaticos(mensaje);
+                    //Obtener el desgaste de los neumáticos
+                    double desgaste = Double.parseDouble(mensaje.split(" ")[1]);
+                    this.interfazIn.setDesgasteNeumaticos(desgaste);
+                }else{
+
+                    if(mensaje.equals("comienzo")){
+                        this.interfazIn.iniciarMonitoreoDesgasteLlantas();
+                        interfazIn.agregarMensajePiloto("comenzó la carrera");
+                    } 
                     
-                interfazIn.agregarMensajePiloto(mensaje);
+                
                 }
+
+                if(mensaje.contains("Vuelta")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                }
+                
+               
             
                 
             }
@@ -108,7 +123,7 @@ try {
        
         InterfazMecanico interfazMec = new InterfazMecanico();
         interfazMec.setVisible(true);
-        InterfazIngeniero interfazIng = new InterfazIngeniero(this.salidaCliente);
+        InterfazIngeniero interfazIng = new InterfazIngeniero(this.salidaServidor);
         interfazIng.setVisible(true);
 
         interfazMec.setInterfazIngeniero(interfazIng);

@@ -13,8 +13,14 @@ import jade.wrapper.StaleProxyException;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import jade.wrapper.AgentContainer;
 
 public class InterfazIngeniero extends JFrame {
@@ -30,13 +36,23 @@ public class InterfazIngeniero extends JFrame {
     private PanelNeumaticos panelNeumaticos;
     private AgentContainer mainContainer;
     private JButton confirmarPitstop;
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private DecimalFormat decimalFormat = new DecimalFormat("#.##");
+    private double desgasteNeumaticos = 0;
+    private JLabel imagenCoche;
 
     public void setMainContainer(AgentContainer mainContainer) {
         this.mainContainer = mainContainer;
     }
 
+    public void setDesgasteNeumaticos(double desgasteNeumaticos) {
+        this.desgasteNeumaticos = desgasteNeumaticos;
+        
+    }
+
 
     public InterfazIngeniero(DataOutputStream ss) {
+        this.salidaServidor = ss;
 
         Font font = new Font("Arial", Font.BOLD, 20);
         this.salidaServidor = ss;
@@ -73,12 +89,12 @@ public class InterfazIngeniero extends JFrame {
         estadoCoche.setFont(font);
         panelPrincipal.add(estadoCoche);
 
-        // Panel para estado del coche (imagen)
+        // Panel para estado del coche (imagen inicial)
         Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_neutro.png");
         //achicamos la imagen un poco
         ImageIcon imageIcon = (ImageIcon) icon;
         imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
-        JLabel imagenCoche = new JLabel(icon);
+        imagenCoche = new JLabel(icon);
         
 
         imagenCoche.setBounds(0, 350, 200, 460);
@@ -208,7 +224,16 @@ public class InterfazIngeniero extends JFrame {
 
     // Método para actualizar el desgaste de los neumáticos
     public void actualizarDesgasteNeumaticos(String desgaste) {
-        desgasteNeumaticosLabel.setText(desgaste);
+        try {
+            // Eliminar la palabra "desgaste" del string de entrada
+            String desgasteSinPalabra = desgaste.replace("desgaste ", "").trim();
+            double desgasteDouble = Double.parseDouble(desgasteSinPalabra);
+            String desgasteFormateado = decimalFormat.format(desgasteDouble);
+            desgasteNeumaticosLabel.setText("desgaste: "+desgasteFormateado + "%");
+        } catch (NumberFormatException e) {
+            // Manejar el error si el desgaste no es un número válido
+            desgasteNeumaticosLabel.setText("Error");
+        }
     }
 
     // Método para actualizar el pronóstico de la carrera
@@ -220,9 +245,75 @@ public class InterfazIngeniero extends JFrame {
         this.ingeniero_pista = ingeniero_pista;
     }
 
+    public void iniciarMonitoreoDesgasteLlantas() {
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                
+                try {
+                    salidaServidor.writeUTF("desgaste");
+                } catch (Exception e) {
+                    System.out.println("Error al enviar la solicitud de preugabas: " + e.getMessage());
+                }
+                solicitarDesgasteLlantas();
+                
+            }
+        }, 0, 10, TimeUnit.MILLISECONDS);
+    }
+
+    private void solicitarDesgasteLlantas() {
+        // Aquí debes implementar la lógica para solicitar el desgaste de las llantas
+        //Dependiendo del valor del desgaste se sustituye la imagen de coche estado
+        if(desgasteNeumaticos<15 && desgasteNeumaticos>0){
+            Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_excelente.png");
+            //achicamos la imagen un poco
+            ImageIcon imageIcon = (ImageIcon) icon;
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+            imagenCoche.setIcon(icon);
+        }
+        if(desgasteNeumaticos>16 && desgasteNeumaticos<50){
+            Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_bien.png");
+            //achicamos la imagen un poco
+            ImageIcon imageIcon = (ImageIcon) icon;
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+            imagenCoche.setIcon(icon);
+        }
+        if(desgasteNeumaticos>51 && desgasteNeumaticos<70){
+            Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_cuidado.png");
+            //achicamos la imagen un poco
+            ImageIcon imageIcon = (ImageIcon) icon;
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+            imagenCoche.setIcon(icon);
+        }
+        if(desgasteNeumaticos>71 && desgasteNeumaticos<90){
+            Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_precaucion.png");
+            //achicamos la imagen un poco
+            ImageIcon imageIcon = (ImageIcon) icon;
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+            imagenCoche.setIcon(icon);
+        }
+        if(desgasteNeumaticos>91 && desgasteNeumaticos<100){
+            Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_moribundo.png");
+            //achicamos la imagen un poco
+            ImageIcon imageIcon = (ImageIcon) icon;
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+            imagenCoche.setIcon(icon);
+        }
+
+        if( desgasteNeumaticos>100){
+            Icon icon = new ImageIcon("FormulaIA/src/Interfaz/Images/carro_fuera.png");
+            //achicamos la imagen un poco
+            ImageIcon imageIcon = (ImageIcon) icon;
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(150, 250, Image.SCALE_DEFAULT));
+            imagenCoche.setIcon(icon);
+        }
+       
+    }
+
     // Método para probar la interfaz
     public static void main(String[] args) {
         InterfazIngeniero interfazIngeniero = new InterfazIngeniero(null);
         interfazIngeniero.setVisible(true);
+        interfazIngeniero.iniciarMonitoreoDesgasteLlantas();
     }
 }
