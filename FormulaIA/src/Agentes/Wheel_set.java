@@ -45,7 +45,6 @@ public class Wheel_set implements Concept{
 
     public double getDesgaste(){
     //Desgaste entre 0 y 100
-    System.out.println("Duracion actual: " + duracion_actual);
         return 100 - (duracion_actuald*100)/duraciond;
         
     }

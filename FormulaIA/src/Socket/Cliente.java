@@ -42,9 +42,12 @@ public class Cliente extends Conexion implements Runnable {
 
             String mensaje;
             while ((mensaje = in.readUTF()) != null) {
-                System.out.println(mensaje);
+                
                 if(mensaje.equals("desgaste")){
-                    this.interfazPiloto.setDesgaste();
+                    if(!interfazPiloto.getFinCarrera()){
+                        this.interfazPiloto.setDesgaste();
+                    }
+                    
                 }
             }
         } catch (IOException e) {

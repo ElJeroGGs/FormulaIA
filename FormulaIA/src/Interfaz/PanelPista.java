@@ -31,22 +31,32 @@ public class PanelPista extends JPanel implements ActionListener {
     private Timer timer;
     private final int BALL_SIZE = 10;
     private BufferedImage pistaImage;
-    private static final int JUMP_SIZE = 1;
 
     private java.util.List<Point> checkpoints = new ArrayList<>(); // Lista de puntos de control
-    private static final int MOVE_SPEED = 4;
+    private int MOVE_SPEED = 3;
     private int currentCheckpointIndex = 0;
     private boolean enPista = false;private JLabel overlayLabel;
     private List<ImageIcon> overlayIcons;
     private int overlayIndex = 0;
     private InterfazPiloto interfazPiloto;
-    private int NumeroVueltas = 5; // Número de vueltas
+    private int NumeroVueltas = 30; // Número de vueltas
     private int vueltasCompletadas = 0; // Contador de vueltas completadas
     private long startTime; // Tiempo de inicio de la vuelta
     private List<Long> lapTimes = new ArrayList<>(); // Lista de tiempos de vuelta
     private double desgasteNeumaticos = 0.0;
 private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    
+private boolean finCarrera = false;
+
+public boolean getFinCarrera(){
+    return finCarrera;
+}
+    public void setFinCarrera(boolean finCarrera){
+        this.finCarrera = finCarrera;
+    }
+
+    public void setVelocidad(int velocidad) {
+        this.MOVE_SPEED = velocidad;
+    }
 
     public List<String> getLapTimes(){
         List<String> lapTimesStr = new ArrayList<>();
@@ -60,21 +70,61 @@ private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
         return lapTimesStr;
     }
 
+    private void solicitarDesgasteLlantas() {
+        // Aquí debes implementar la lógica para solicitar el desgaste de las llantas
+        System.out.println("Solicitando desgaste de llantas...");
+        
+        if (desgasteNeumaticos > 100) {
+            desgasteNeumaticos = 100;
+        }
+    }
+
+    public void iniciarMonitoreoDesgasteLlantas() {
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    solicitarDesgasteLlantas();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Reiniciar el scheduler si ocurre una excepción
+                    reiniciarScheduler();
+                }
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+    }
     public int getNumeroVueltas() {
         return this.NumeroVueltas ;
+    }
+
+    private void reiniciarScheduler() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+        scheduler = Executors.newScheduledThreadPool(1);
+        iniciarMonitoreoDesgasteLlantas();
     }
 
      public void iniciarCarrera() {
         // Lógica para iniciar la carrera
         System.out.println("Carrera iniciada");
 
-        // Programar la tarea para ejecutar setDesgasteNeumaticos cada 5 segundos
+        // Programar la tarea para ejecutar setDesgasteNeumaticos 
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
+                if(finCarrera){
+                }else{
+                    
                 interfazPiloto.setDesgasteNeumaticos();
+                }
             }
-        }, 0, 10, TimeUnit.MILLISECONDS);
+        }, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     public int getVueltasCompletadas() {
@@ -153,11 +203,12 @@ private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
                 } else {
                     ((Timer) e.getSource()).stop();
                     overlayLabel.setVisible(false);
-                    activarBoton();  
+                    if(interfazPiloto != null){
+                    activarBoton(); } 
                     iniciarCarrera();      
                     startTime = System.currentTimeMillis(); 
                     // Iniciar el temporizador para comenzar la vuelta
-                    timer = new Timer(30, PanelPista.this);
+                    timer = new Timer(20, PanelPista.this);
                     timer.start();
                 }
                 
@@ -189,6 +240,7 @@ private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
 
         if(desgasteNeumaticos > 100){
             timer.stop();
+            interfazPiloto.setFinalCarrera(true);
         }
 
         if (!checkpoints.isEmpty() && currentCheckpointIndex < checkpoints.size()) {
@@ -216,12 +268,17 @@ private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
                     long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
                     lapTimes.add(lapTime); // Almacenar el tiempo de la vuelta
                     startTime = System.currentTimeMillis(); // Reiniciar el cronómetro
+                    if(interfazPiloto != null){
                     interfazPiloto.repintarVueltas();
                     interfazPiloto.VueltaCompletada();
+                    
                     if (vueltasCompletadas >= NumeroVueltas) {
+                        interfazPiloto.setFinalCarrera(true);
+                        this.finCarrera = true;
                         timer.stop(); // Detener el temporizador cuando se completen todas las vueltas
-                        enPista = false;
+                        
                     }
+                }
                 }
             }
         }

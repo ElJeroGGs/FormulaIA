@@ -50,6 +50,30 @@ public class InterfazIngeniero extends JFrame {
         
     }
 
+    
+
+    
+
+    private void reiniciarScheduler() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+        scheduler = Executors.newScheduledThreadPool(1);
+        iniciarMonitoreoDesgasteLlantas();
+    }
+
+    public void setVueltasRestantes(String vueltasRestantes) {
+        vueltasRestantesLabel.setText(vueltasRestantes);
+    }
+    public void setLapsIniciales(String laps){
+        vueltasRestantes = laps;
+    }
+
 
     public InterfazIngeniero(DataOutputStream ss) {
         this.salidaServidor = ss;
@@ -249,17 +273,27 @@ public class InterfazIngeniero extends JFrame {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                
-                try {
-                    salidaServidor.writeUTF("desgaste");
-                } catch (Exception e) {
-                    System.out.println("Error al enviar la solicitud de preugabas: " + e.getMessage());
+                if(desgasteNeumaticos>100){
+                    scheduler.shutdown();
+                }else{
+                    try {
+                        salidaServidor.writeUTF("desgaste");
+                        solicitarDesgasteLlantas();
+                    } catch (Exception e) {
+                        System.out.println("Error al enviar la solicitud de preugabas: " + e.getMessage());
+                        e.printStackTrace();
+                        reiniciarScheduler();
+
+                    }
+                    
+
                 }
-                solicitarDesgasteLlantas();
+                
                 
             }
         }, 0, 10, TimeUnit.MILLISECONDS);
     }
+
 
     private void solicitarDesgasteLlantas() {
         // Aquí debes implementar la lógica para solicitar el desgaste de las llantas

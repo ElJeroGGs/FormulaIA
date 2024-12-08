@@ -31,15 +31,58 @@ public class InterfazPiloto extends JFrame{
     private JLabel lblNumeroVueltas;
     private JLabel lblTiempoPorVuelta;
     private List<String> TiemposVueltas = new ArrayList<String>();
-    
+    private boolean finCarrera = false;    
+    private Timer timere;
+
+    private JButton btnEntrarBoxes;
 
 
     public List<String> getTiemposVueltas() {
         return pistaPanel.getLapTimes();
     }
 
+    public boolean getFinCarrera(){
+        return finCarrera;
+    }
+
     public void setDesgasteNeumaticos(){
-        juegoActual.setDesgaste();
+        if(!finCarrera){
+            juegoActual.setDesgaste();
+            setVelocidad();
+        }
+
+        
+    }
+
+    //Metodo que cambia la velocidad del piloto
+    public void setVelocidad (){
+        double desgaste = this.juegoActual.getDesgaste();
+        int velocidad = 7;
+        if(desgaste > 5 && desgaste < 15){
+             velocidad = 14;
+        }
+        else if(desgaste > 15 && desgaste < 25){
+            velocidad = 21;
+        }
+        else if(desgaste > 25 && desgaste < 35){
+            velocidad = 28;
+        } else if(desgaste > 35 && desgaste < 55){
+            velocidad = 35;
+        } 
+          else if(desgaste > 55 && desgaste < 75){
+            velocidad = 28; 
+        } else if(desgaste > 75 && desgaste < 85){
+            velocidad = 21;
+        } else if(desgaste > 85 && desgaste < 95){
+            velocidad = 14;
+        } else if(desgaste > 95){
+            velocidad = 7;
+        }
+        pistaPanel.setVelocidad(velocidad);
+    }
+
+    public void setFinalCarrera(boolean finCarrera){
+        this.finCarrera = finCarrera;
     }
 
     public InterfazPiloto(DataOutputStream salidaServidor, String circuito, Wheel_set jA) {
@@ -77,8 +120,8 @@ public class InterfazPiloto extends JFrame{
             btnComenzarCarrera.setEnabled(false);
             try {
                 salidaServidor.writeUTF("comienzo");
+                salidaServidor.writeUTF("Vueltas restantes: "+(pistaPanel.getNumeroVueltas()));
             } catch (Exception f) {
-                // TODO: handle exception
             }
         });
 
@@ -110,27 +153,46 @@ public class InterfazPiloto extends JFrame{
         lblLeaderboard.setFont(font);
         add(lblLeaderboard);
 
+         //Boton para entrar a Boxes
+        btnEntrarBoxes = new JButton("Entrar a Boxes");
+        btnEntrarBoxes.setFont( new Font("Arial", Font.BOLD, 24));
+        btnEntrarBoxes.setBackground(Color.darkGray);
+        btnEntrarBoxes.setForeground(Color.white);
+        btnEntrarBoxes.setFocusPainted(false);
+        btnEntrarBoxes.setBounds(50, 450, 300, 70);
+        btnEntrarBoxes.setVisible(false);
+        add(btnEntrarBoxes);
+
     }
 
     //Metodo para repintar el numero de vueltas
     public void repintarVueltas(){
         lblNumeroVueltas.setText("Vueltas:"+pistaPanel.getVueltasCompletadas()+"/"+pistaPanel.getNumeroVueltas());
+        
     }
 
     // Método para iniciar el temporizador que actualiza el tiempo por vuelta
     private void startLapTimeUpdater() {
-        Timer timer = new Timer(40, new ActionListener() {
+     timere = new Timer(40, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lblTiempoPorVuelta.setText("Tiempo de vuelta:\n" + pistaPanel.getCurrentLapTime());
+                if(finCarrera){
+                    timere.stop();
+                }else{
+                    lblTiempoPorVuelta.setText("Tiempo de vuelta:\n" + pistaPanel.getCurrentLapTime());
+                }
+                
             }
         });
-        timer.start();
+        timere.start();
     }
 
     public void VueltaCompletada (){
+
+
         try {
             salidaServidor.writeUTF(getTiemposVueltas().get(getTiemposVueltas().size()-1));
+            salidaServidor.writeUTF("Vueltas restantes: "+(pistaPanel.getNumeroVueltas()-pistaPanel.getVueltasCompletadas()));
         } catch (Exception e) {
         }
     }
@@ -139,6 +201,7 @@ public class InterfazPiloto extends JFrame{
         
         try {
             salidaServidor.writeUTF("desgaste "+juegoActual.getDesgaste());
+        
             this.pistaPanel.setDesgasteNeumaticos(juegoActual.getDesgaste());
         } catch (Exception e) {
         }
@@ -147,7 +210,8 @@ public class InterfazPiloto extends JFrame{
 
     public void solicitarCambioLlantas() {
         //Solicita cambio de llantas
-
+btnSolicitarCambio.setVisible(false);
+btnEntrarBoxes.setVisible(true);
         try {
             salidaServidor.writeUTF("El piloto quiere un cambio de llantas");
         } catch (IOException e) {

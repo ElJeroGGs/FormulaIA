@@ -88,18 +88,27 @@ try {
 
                     if(mensaje.equals("comienzo")){
                         this.interfazIn.iniciarMonitoreoDesgasteLlantas();
-                        interfazIn.agregarMensajePiloto("comenzó la carrera");
+                        interfazIn.agregarMensajePiloto("Comenzó la carrera");
+                       
                     } 
                     
                 
                 }
+                if(mensaje.contains("cambio")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                }
 
-                if(mensaje.contains("Vuelta")){
+               
+
+                if(mensaje.contains("Vueltas restantes:")){
+                    interfazIn.setVueltasRestantes(mensaje);
+                }
+
+                if(mensaje.contains("Vuelta ")){
                     interfazIn.agregarMensajePiloto(mensaje);
                 }
                 
                
-            
                 
             }
 
