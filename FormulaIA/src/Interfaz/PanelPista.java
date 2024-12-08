@@ -320,8 +320,16 @@ public boolean getFinCarrera(){
     
             if (distance > MOVE_SPEED) {
                 // Mover en dirección al objetivo
-                x += (int) (dx / distance * MOVE_SPEED);
-                y += (int) (dy / distance * MOVE_SPEED);
+                int movAux = MOVE_SPEED;
+                int movPits = 3;
+                if(dentroPits){
+                    x += (int) (dx / distance * movPits);
+                y += (int) (dy / distance * movPits);
+                } else{
+                    x += (int) (dx / distance * movAux);
+                y += (int) (dy / distance * movAux);
+                }
+                
             } else {
                 // Llegar al punto de control
                 x = target.x;
