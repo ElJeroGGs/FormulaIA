@@ -33,7 +33,7 @@ public class PanelPista extends JPanel implements ActionListener {
     private BufferedImage pistaImage;
 
     private java.util.List<Point> checkpoints = new ArrayList<>(); // Lista de puntos de control
-    private int MOVE_SPEED = 3;
+    private int MOVE_SPEED = 9;
     private int currentCheckpointIndex = 0;
     private boolean enPista = false;private JLabel overlayLabel;
     private List<ImageIcon> overlayIcons;
@@ -46,6 +46,10 @@ public class PanelPista extends JPanel implements ActionListener {
     private double desgasteNeumaticos = 0.0;
 private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 private boolean finCarrera = false;
+private List<String> etiquetas = new ArrayList<>();
+private boolean usarPits = true;
+private boolean dentroPits = false;
+
 
 public boolean getFinCarrera(){
     return finCarrera;
@@ -158,7 +162,7 @@ public boolean getFinCarrera(){
             public void mouseClicked(MouseEvent e) {
                 int clickX = e.getX();
                 int clickY = e.getY();
-                System.out.println(clickX + "," + clickY);
+                System.out.println(clickX + "," + clickY + " pits");
             }
         });
 
@@ -219,15 +223,20 @@ public boolean getFinCarrera(){
 
         repaint();
     }
-    private void loadCheckpointsFromFile(String filePath) {
+
+    public void loadCheckpointsFromFile(String filePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 2) {
-                    int checkpointX = Integer.parseInt(parts[0].trim());
-                    int checkpointY = Integer.parseInt(parts[1].trim());
-                    checkpoints.add(new Point(checkpointX, checkpointY));
+                String[] parts = line.split(" ");
+                String[] coords = parts[0].split(",");
+                int x = Integer.parseInt(coords[0]);
+                int y = Integer.parseInt(coords[1]);
+                checkpoints.add(new Point(x, y));
+                if (parts.length > 1) {
+                    etiquetas.add(parts[1]);
+                } else {
+                    etiquetas.add("");
                 }
             }
         } catch (IOException e) {
@@ -235,22 +244,80 @@ public boolean getFinCarrera(){
         }
     }
 
+    public void setUsarPits(boolean usarPits) {
+        this.usarPits = usarPits;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-
-        if(desgasteNeumaticos > 100){
+        if (desgasteNeumaticos > 100) {
             timer.stop();
             interfazPiloto.setFinalCarrera(true);
         }
-
+    
         if (!checkpoints.isEmpty() && currentCheckpointIndex < checkpoints.size()) {
-            Point target = checkpoints.get(currentCheckpointIndex);
 
+        
+    
+            Point target = checkpoints.get(currentCheckpointIndex);
+            String etiqueta = etiquetas.get(currentCheckpointIndex);
+
+            
+            
+            // Verificar si se debe tomar la ruta de los pits
+            if (usarPits) {
+                if (etiqueta.equals("pits")) {
+                    dentroPits = true;
+                }  else if (dentroPits) {
+                    // Ignorar puntos sin etiqueta hasta encontrar "salida"
+                    while (!etiqueta.equals("salida")) {
+                        currentCheckpointIndex++;
+                        if (currentCheckpointIndex == checkpoints.size()-1) {
+                            currentCheckpointIndex = 0;
+                            // Si se completó una vuelta
+                    if (currentCheckpointIndex >= checkpoints.size()) {
+                    currentCheckpointIndex = 0;
+                    vueltasCompletadas++;
+                    long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
+                    lapTimes.add(lapTime);
+                    startTime = System.currentTimeMillis(); // Reiniciar el tiempo de inicio para la siguiente vuelta
+                }
+                        }
+                        etiqueta = etiquetas.get(currentCheckpointIndex);
+                    }
+                    dentroPits = false;
+                    usarPits = false;
+                     // Desactivar el uso de pits después de salir
+                }else{
+                    // Ignorar puntos con etiquetas "pits" o "salida" si usarPits es false
+                    while (etiqueta.equals("pits") || etiqueta.equals("salida")) {
+                        currentCheckpointIndex++;
+                        if (currentCheckpointIndex == checkpoints.size() - 1) {
+                            currentCheckpointIndex = 0;
+                        }
+                        etiqueta = etiquetas.get(currentCheckpointIndex);
+                }
+            }
+
+            }
+            else {
+                // Ignorar puntos con etiquetas "pits" o "salida" si usarPits es false
+                while (etiqueta.equals("pits") || etiqueta.equals("salida")) {
+                    currentCheckpointIndex++;
+                    if (currentCheckpointIndex == checkpoints.size() - 1) {
+                        currentCheckpointIndex = 0;
+                    }
+                    etiqueta = etiquetas.get(currentCheckpointIndex);
+                }
+
+            }
+
+            target = checkpoints.get(currentCheckpointIndex);
             // Calcular la dirección hacia el punto de control
             int dx = target.x - x;
             int dy = target.y - y;
             double distance = Math.sqrt(dx * dx + dy * dy);
-
+    
             if (distance > MOVE_SPEED) {
                 // Mover en dirección al objetivo
                 x += (int) (dx / distance * MOVE_SPEED);
@@ -260,31 +327,23 @@ public boolean getFinCarrera(){
                 x = target.x;
                 y = target.y;
                 currentCheckpointIndex++; // Avanzar al siguiente punto
-
+    
                 // Si se completó una vuelta
                 if (currentCheckpointIndex >= checkpoints.size()) {
                     currentCheckpointIndex = 0;
                     vueltasCompletadas++;
                     long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
-                    lapTimes.add(lapTime); // Almacenar el tiempo de la vuelta
-                    startTime = System.currentTimeMillis(); // Reiniciar el cronómetro
-                    if(interfazPiloto != null){
-                    interfazPiloto.repintarVueltas();
-                    interfazPiloto.VueltaCompletada();
-                    
-                    if (vueltasCompletadas >= NumeroVueltas) {
-                        interfazPiloto.setFinalCarrera(true);
-                        this.finCarrera = true;
-                        timer.stop(); // Detener el temporizador cuando se completen todas las vueltas
-                        
-                    }
-                }
+                    lapTimes.add(lapTime);
+                    startTime = System.currentTimeMillis(); // Reiniciar el tiempo de inicio para la siguiente vuelta
                 }
             }
+    
+            // Redibujar el panel para mostrar la nueva posición de la bolita
+            repaint();
         }
-
-        repaint();
     }
+    
+   
 
     public String getTimePerLap() {
         StringBuilder sb = new StringBuilder();
@@ -316,7 +375,19 @@ public boolean getFinCarrera(){
             g.drawImage(pistaImage, 0, 0, this);
         }
 
-       
+       // Dibujar los puntos de control (ruta normal)
+        g.setColor(Color.BLUE);
+        for (Point checkpoint : checkpoints) {
+            g.fillOval(checkpoint.x - 5, checkpoint.y - 5, 10, 10);
+        }
+        //Dibujar los puntos de control (ruta de pits)
+        g.setColor(Color.GREEN);
+        for (int i = 0; i < checkpoints.size(); i++) {
+            if (etiquetas.get(i).equals("pits")) {
+                Point checkpoint = checkpoints.get(i);
+                g.fillOval(checkpoint.x - 5, checkpoint.y - 5, 10, 10);
+            }
+        }
 
         // Dibujar la "bolita" si está en pista
         if (enPista) {
@@ -339,7 +410,7 @@ public boolean getFinCarrera(){
 
             // Ruta del archivo con los puntos de control
             String checkpointsFile = "FormulaIA\\src\\Interfaz\\Circuitos\\usa.txt";
-            PanelPista panel = new PanelPista( "usa"); // Coordenadas iniciales
+            PanelPista panel = new PanelPista( "canada"); // Coordenadas iniciales
             frame.add(panel);
             
             frame.setVisible(true);
