@@ -1,5 +1,7 @@
 package Agentes;
 
+import java.io.Serializable;
+
 import jade.content.Concept;
 
 public class Wheel_set implements Concept{

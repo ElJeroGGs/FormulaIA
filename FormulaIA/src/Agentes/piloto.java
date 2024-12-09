@@ -34,12 +34,21 @@ public class piloto extends Agent {
 
     private Codec c = new SLCodec();
     private Ontology ontologia = PItStopOntology.getInstance();
+    private Wheel_set juego;
 
     // Constructor para inicializar el DataOutputStream
     public piloto(DataOutputStream salidaServidor, Socket cS) {
         this.salidaServidor = salidaServidor;
         this.clienteSocket = cS;
         
+    }
+
+    public void setJuego(Wheel_set juego) {
+        this.juego = juego;
+    }
+
+    public Wheel_set getJuego() {
+        return juego;
     }
     // Comportamiento para solicitar un cambio de llantas al mecanico
     private class Comportamiento extends Behaviour {

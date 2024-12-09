@@ -12,6 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.util.Scanner;
 
 import Agentes.piloto;
@@ -21,6 +22,7 @@ import jade.domain.df;
 public class Cliente extends Conexion implements Runnable {
 
     private InterfazPiloto interfazPiloto;
+
 
     public void setInterfazPiloto(InterfazPiloto interfazPiloto) {
         this.interfazPiloto = interfazPiloto;
@@ -49,6 +51,21 @@ public class Cliente extends Conexion implements Runnable {
                     }
                     
                 }
+
+                if(mensaje.contains("boxes")){
+                    if(!interfazPiloto.getFinCarrera()){
+                        this.interfazPiloto.activarBotonBoxes();
+                    }
+                    
+                }
+
+                if(mensaje.contains("Neumaticos")){
+
+                    if(!interfazPiloto.getFinCarrera()){
+                        this.interfazPiloto.cambiarllantas(mensaje);
+                    }
+
+                }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -71,13 +88,13 @@ public class Cliente extends Conexion implements Runnable {
     public void run() {
 
         try {
-            // Instanciamos la interfaz del cliente para instanciar las características de la carrera
-            Interfaz.Cliente interfazCliente = new Interfaz.Cliente(salidaServidor, this);
-            
-            //Muestra la interfaz de Piloto
-            
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+    // Instanciamos la interfaz del cliente para instanciar las características de la carrera
+    Interfaz.Cliente interfazCliente = new Interfaz.Cliente(salidaServidor, this);
+
+    // Muestra la interfaz de Piloto
+
+} catch (Exception e) {
+    System.out.println(e.getMessage());
+}
     }
 }

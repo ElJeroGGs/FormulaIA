@@ -13,6 +13,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import Interfaz.InterfazIngeniero;
@@ -25,6 +28,13 @@ import jade.core.Runtime;
 public class Servidor extends Conexion implements Runnable {
     private InterfazIngeniero interfazIn;
     private InterfazMecanico interfazMec;
+    private ObjectOutputStream out;
+
+    public void setInterfazIngeniero(InterfazIngeniero interfazIn) {
+        this.interfazIn = interfazIn;
+    }
+
+    
     
 
     public Servidor() throws IOException {
@@ -33,7 +43,7 @@ public class Servidor extends Conexion implements Runnable {
 
     
 
-    public void startServer() {
+    public void startServer() throws ClassNotFoundException {
         try {
             System.out.println("Esperando...");
 
@@ -44,7 +54,7 @@ public class Servidor extends Conexion implements Runnable {
                 
 
 
-                salidaServidor = new DataOutputStream(cs.getOutputStream());
+                salidaServidor = new DataOutputStream(cs.getOutputStream()); 
                 new Thread(this).run();
 //Creamos los agentes
 try {
@@ -71,9 +81,11 @@ try {
     
     } catch (Exception e) {
     }
-
+        
                 // Esperar a que el cliente conteste el mensaje
                 DataInputStream in = new DataInputStream(cs.getInputStream());
+
+                
 
 
             String mensaje;
@@ -89,6 +101,7 @@ try {
                     if(mensaje.equals("comienzo")){
                         this.interfazIn.iniciarMonitoreoDesgasteLlantas();
                         interfazIn.agregarMensajePiloto("Comenzó la carrera");
+                        interfazIn.desbloqueoPits();
                        
                     } 
                     
@@ -108,6 +121,29 @@ try {
                     interfazIn.agregarMensajePiloto(mensaje);
                 }
                 
+                if(mensaje.contains("boxes")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                }
+
+                if(mensaje.equals("Saliendo de Pitstop")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                    interfazIn.desbloqueoPits();
+                }
+
+                if(mensaje.equals("Entrando a Pitstop")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+
+                    interfazIn.cambioLlantas();
+
+                    interfazMec.Pits();
+
+                    
+                }
+
+                if (mensaje.equals("Saliendo de Pits")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                    interfazIn.desbloqueoPits();
+            }
                
                 
             }
@@ -131,15 +167,22 @@ try {
 
        
         InterfazMecanico interfazMec = new InterfazMecanico();
+      
         interfazMec.setVisible(true);
-        InterfazIngeniero interfazIng = new InterfazIngeniero(this.salidaServidor);
-        interfazIng.setVisible(true);
+        InterfazIngeniero interfazIng;
+        try {
+            interfazIng = new InterfazIngeniero(this.salidaServidor);
+            interfazIng.setVisible(true);
 
         interfazMec.setInterfazIngeniero(interfazIng);
 
         interfazIng.setInterfazMecanico(interfazMec);
 
         this.interfazIn = interfazIng;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         this.interfazMec = interfazMec;
 
        

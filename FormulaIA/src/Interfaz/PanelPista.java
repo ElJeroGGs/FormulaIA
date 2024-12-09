@@ -2,6 +2,8 @@ package Interfaz;
 
 import javax.swing.*;
 
+import Agentes.piloto;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,8 +49,12 @@ public class PanelPista extends JPanel implements ActionListener {
 private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 private boolean finCarrera = false;
 private List<String> etiquetas = new ArrayList<>();
-private boolean usarPits = true;
+private boolean usarPits = false;
 private boolean dentroPits = false;
+private boolean enTaller = false;
+private int contador = 0;
+private piloto pilo;
+private boolean saliendoPitLane = false;
 
 
 public boolean getFinCarrera(){
@@ -60,6 +66,10 @@ public boolean getFinCarrera(){
 
     public void setVelocidad(int velocidad) {
         this.MOVE_SPEED = velocidad;
+    }
+
+    public void EntrarBoxes() {
+        usarPits = true;
     }
 
     public List<String> getLapTimes(){
@@ -115,9 +125,8 @@ public boolean getFinCarrera(){
     }
 
      public void iniciarCarrera() {
-        // Lógica para iniciar la carrera
-        System.out.println("Carrera iniciada");
-
+        
+interfazPiloto.iniciarCarrera();
         // Programar la tarea para ejecutar setDesgasteNeumaticos 
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -224,6 +233,14 @@ public boolean getFinCarrera(){
         repaint();
     }
 
+    public String getLapTime(){
+        long lapTime = System.currentTimeMillis() - startTime;
+        long minutes = (lapTime / 60000) % 60;
+        long seconds = (lapTime / 1000) % 60;
+        long milliseconds = lapTime % 1000;
+        return String.format("%02d:%02d.%03d", minutes, seconds, milliseconds);
+    }
+
     public void loadCheckpointsFromFile(String filePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -248,8 +265,13 @@ public boolean getFinCarrera(){
         this.usarPits = usarPits;
     }
 
+    public boolean getSalidaPitLane() {
+        return saliendoPitLane;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
+       
         if (desgasteNeumaticos > 100) {
             timer.stop();
             interfazPiloto.setFinalCarrera(true);
@@ -265,54 +287,60 @@ public boolean getFinCarrera(){
             
             
             // Verificar si se debe tomar la ruta de los pits
-            if (usarPits) {
-                if (etiqueta.equals("pits")) {
-                    dentroPits = true;
-                }  else if (dentroPits) {
-                    // Ignorar puntos sin etiqueta hasta encontrar "salida"
-                    while (!etiqueta.equals("salida")) {
-                        currentCheckpointIndex++;
-                        if (currentCheckpointIndex == checkpoints.size()-1) {
-                            currentCheckpointIndex = 0;
-                            // Si se completó una vuelta
-                    if (currentCheckpointIndex >= checkpoints.size()) {
+    if (usarPits) {
+        if (etiqueta.equals("pits")) {
+            dentroPits = true;
+        } else if (etiqueta.equals("taller")){
+            if(contador < 1){
+                try {
+                    interfazPiloto.EntrandoTaller();
+                    Thread.sleep(5000);
+            
+                } catch (InterruptedException j) {
+                    j.printStackTrace();
+                }
+                contador++;
+                interfazPiloto.saliendoTaller();
+            }
+            
+        }else if (dentroPits) {
+            // Ignorar puntos sin etiqueta hasta encontrar "salida"
+            while (!etiqueta.equals("salida")) {
+                currentCheckpointIndex++;
+                if (currentCheckpointIndex == checkpoints.size() - 1) {
                     currentCheckpointIndex = 0;
-                    vueltasCompletadas++;
-                    long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
-                    lapTimes.add(lapTime);
-                    startTime = System.currentTimeMillis(); // Reiniciar el tiempo de inicio para la siguiente vuelta
+                    // Se completó una vuelta
+        vueltasCompletadas++;
+        long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
+        lapTimes.add(lapTime);
+        startTime = System.currentTimeMillis();
+        interfazPiloto.VueltaCompletada();
+        interfazPiloto.repintarVueltas(); // Reiniciar el tiempo de inicio para la siguiente vuelta
+    
                 }
-                        }
-                        etiqueta = etiquetas.get(currentCheckpointIndex);
-                    }
-                    dentroPits = false;
-                    usarPits = false;
-                     // Desactivar el uso de pits después de salir
-                }else{
-                    // Ignorar puntos con etiquetas "pits" o "salida" si usarPits es false
-                    while (etiqueta.equals("pits") || etiqueta.equals("salida")) {
-                        currentCheckpointIndex++;
-                        if (currentCheckpointIndex == checkpoints.size() - 1) {
-                            currentCheckpointIndex = 0;
-                        }
-                        etiqueta = etiquetas.get(currentCheckpointIndex);
-                }
+                etiqueta = etiquetas.get(currentCheckpointIndex);
             }
+            dentroPits = false;
+            usarPits = false;
+            //System.out.println("Saliendo de pits");
+            interfazPiloto.saliendoPits();
+        } else if (etiqueta.equals("salida")) {
+            currentCheckpointIndex++;
+        }
 
+        
+    } else {
+        // Ignorar puntos con etiquetas "pits" o "salida" si usarPits es false
+        while (etiqueta.equals("pits") || etiqueta.equals("salida") || etiqueta.equals("taller")) {
+            currentCheckpointIndex++;
+            if (currentCheckpointIndex == checkpoints.size() - 1) {
+                currentCheckpointIndex = 0;
             }
-            else {
-                // Ignorar puntos con etiquetas "pits" o "salida" si usarPits es false
-                while (etiqueta.equals("pits") || etiqueta.equals("salida")) {
-                    currentCheckpointIndex++;
-                    if (currentCheckpointIndex == checkpoints.size() - 1) {
-                        currentCheckpointIndex = 0;
-                    }
-                    etiqueta = etiquetas.get(currentCheckpointIndex);
-                }
+            etiqueta = etiquetas.get(currentCheckpointIndex);
+        }
+    }
 
-            }
-
-            target = checkpoints.get(currentCheckpointIndex);
+    target = checkpoints.get(currentCheckpointIndex);
             // Calcular la dirección hacia el punto de control
             int dx = target.x - x;
             int dy = target.y - y;
@@ -321,13 +349,15 @@ public boolean getFinCarrera(){
             if (distance > MOVE_SPEED) {
                 // Mover en dirección al objetivo
                 int movAux = MOVE_SPEED;
-                int movPits = 3;
+                int movPits = 2;
                 if(dentroPits){
                     x += (int) (dx / distance * movPits);
                 y += (int) (dy / distance * movPits);
                 } else{
                     x += (int) (dx / distance * movAux);
                 y += (int) (dy / distance * movAux);
+
+                
                 }
                 
             } else {
@@ -345,6 +375,16 @@ public boolean getFinCarrera(){
                     startTime = System.currentTimeMillis(); // Reiniciar el tiempo de inicio para la siguiente vuelta
                 }
             }
+    // Si se completó una vuelta
+    if (currentCheckpointIndex == checkpoints.size()-1) {
+        currentCheckpointIndex = 0;
+        vueltasCompletadas++;
+        long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
+        lapTimes.add(lapTime);
+        startTime = System.currentTimeMillis();
+        interfazPiloto.VueltaCompletada();
+        interfazPiloto.repintarVueltas(); // Reiniciar el tiempo de inicio para la siguiente vuelta
+    }
     
             // Redibujar el panel para mostrar la nueva posición de la bolita
             repaint();
@@ -383,19 +423,6 @@ public boolean getFinCarrera(){
             g.drawImage(pistaImage, 0, 0, this);
         }
 
-       // Dibujar los puntos de control (ruta normal)
-        g.setColor(Color.BLUE);
-        for (Point checkpoint : checkpoints) {
-            g.fillOval(checkpoint.x - 5, checkpoint.y - 5, 10, 10);
-        }
-        //Dibujar los puntos de control (ruta de pits)
-        g.setColor(Color.GREEN);
-        for (int i = 0; i < checkpoints.size(); i++) {
-            if (etiquetas.get(i).equals("pits")) {
-                Point checkpoint = checkpoints.get(i);
-                g.fillOval(checkpoint.x - 5, checkpoint.y - 5, 10, 10);
-            }
-        }
 
         // Dibujar la "bolita" si está en pista
         if (enPista) {
@@ -419,6 +446,7 @@ public boolean getFinCarrera(){
             // Ruta del archivo con los puntos de control
             String checkpointsFile = "FormulaIA\\src\\Interfaz\\Circuitos\\usa.txt";
             PanelPista panel = new PanelPista( "canada"); // Coordenadas iniciales
+            panel.EntrarBoxes();
             frame.add(panel);
             
             frame.setVisible(true);
@@ -429,5 +457,9 @@ public boolean getFinCarrera(){
 
     public void setDesgasteNeumaticos(double desgaste) {
         this.desgasteNeumaticos = desgaste;
+    }
+
+    public boolean getDentroPits() {
+        return dentroPits;
     }
 }

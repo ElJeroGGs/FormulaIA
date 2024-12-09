@@ -20,7 +20,7 @@ public class MainServidor
 
 {
     
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, ClassNotFoundException
     {
         
         Servidor serv = new Servidor(); //Se crea el servidor

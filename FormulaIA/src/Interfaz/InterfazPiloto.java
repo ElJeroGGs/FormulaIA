@@ -33,6 +33,7 @@ public class InterfazPiloto extends JFrame{
     private List<String> TiemposVueltas = new ArrayList<String>();
     private boolean finCarrera = false;    
     private Timer timere;
+    
 
     private JButton btnEntrarBoxes;
 
@@ -46,10 +47,14 @@ public class InterfazPiloto extends JFrame{
     }
 
     public void setDesgasteNeumaticos(){
-        if(!finCarrera){
-            juegoActual.setDesgaste();
-            setVelocidad();
+        boolean enPits = pistaPanel.getDentroPits();
+        if(!enPits){
+            if(!finCarrera){
+                juegoActual.setDesgaste();
+                setVelocidad();
+            }
         }
+
 
         
     }
@@ -119,8 +124,8 @@ public class InterfazPiloto extends JFrame{
             pistaPanel.startLap();
             btnComenzarCarrera.setEnabled(false);
             try {
-                salidaServidor.writeUTF("comienzo");
                 salidaServidor.writeUTF("Vueltas restantes: "+(pistaPanel.getNumeroVueltas()));
+                
             } catch (Exception f) {
             }
         });
@@ -161,7 +166,14 @@ public class InterfazPiloto extends JFrame{
         btnEntrarBoxes.setFocusPainted(false);
         btnEntrarBoxes.setBounds(50, 450, 300, 70);
         btnEntrarBoxes.setVisible(false);
+        btnEntrarBoxes.setEnabled(false);
         add(btnEntrarBoxes);
+
+        btnEntrarBoxes.addActionListener(e -> {
+            pistaPanel.EntrarBoxes();
+            btnEntrarBoxes.setVisible(false);
+            btnSolicitarCambio.setVisible(true);
+        });
 
     }
 
@@ -169,6 +181,11 @@ public class InterfazPiloto extends JFrame{
     public void repintarVueltas(){
         lblNumeroVueltas.setText("Vueltas:"+pistaPanel.getVueltasCompletadas()+"/"+pistaPanel.getNumeroVueltas());
         
+    }
+
+    public void activarBotonBoxes(){
+        btnSolicitarCambio.setEnabled(false);
+        btnEntrarBoxes.setEnabled(true);
     }
 
     // Método para iniciar el temporizador que actualiza el tiempo por vuelta
@@ -232,5 +249,55 @@ btnEntrarBoxes.setVisible(true);
     public void activarBoton() {
         btnSolicitarCambio.setEnabled(true);
         startLapTimeUpdater();
+    }
+
+    public void EntrandoTaller() {
+
+     //Mandamos 2 veces el mensaje por si acaso
+        try {
+            salidaServidor.writeUTF("Entrando a Pitstop");
+            salidaServidor.writeUTF("Entrando a Pitstop");
+        } catch (Exception e) {
+        }
+        
+    }
+
+
+    public void saliendoTaller() {
+        try {
+            salidaServidor.writeUTF("Saliendo de Pitstop");
+        } catch (Exception e) {
+    }
+}
+
+    public void cambiarllantas(String llantas) {
+
+        Wheel_set juegoNuevo = new Wheel_set();
+        //Primero verificamos que compeusto es
+        if(llantas.contains("Neumaticos Duros")){
+            juegoNuevo = new Wheel_set("Neumaticos Duros", 40);
+    }
+    if (llantas.contains("Neumaticos Medios")) {
+        juegoNuevo = new Wheel_set("Neumaticos Medios", 30);
+    }
+    if (llantas.contains("Neumaticos Blandos")) {
+        juegoNuevo = new Wheel_set("Neumaticos Blandos", 20);
+    }
+    this.juegoActual = juegoNuevo;
+    
+}
+
+    public void saliendoPits() {
+        try {
+            salidaServidor.writeUTF("Saliendo de Pits");
+        } catch (Exception e) {
+        }
+    }
+
+    public void iniciarCarrera() {
+        try {
+            salidaServidor.writeUTF("comienzo");
+        } catch (Exception e) {
+        }
     }
 }

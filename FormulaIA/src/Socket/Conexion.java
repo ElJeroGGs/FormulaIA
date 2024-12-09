@@ -1,6 +1,9 @@
 package Socket;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -21,6 +24,8 @@ public class Conexion
     protected ServerSocket ss; // Socket del servidor
     protected Socket cs; // Socket del cliente
     protected DataOutputStream salidaServidor, salidaCliente; // Flujo de datos de salida
+    protected ObjectOutputStream salidaObjetoServidor, SalidaObjetoCliente; // Flujo de datos de salida de objetos
+    
 
     public Conexion(String tipo) throws IOException //Constructor
     {

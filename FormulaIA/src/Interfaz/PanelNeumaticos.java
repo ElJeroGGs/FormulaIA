@@ -4,12 +4,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-
 import Agentes.Wheel_set;
 
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Panel;
 import java.awt.event.MouseAdapter;
 
 import javax.swing.*;
@@ -26,20 +22,25 @@ public class PanelNeumaticos extends JPanel {
     private JPanel selectedPanel;
     private InterfazIngeniero iIng;
     private Interfaz.Cliente clt;
+    private JPanel panel1;
+    private JPanel panel2;
+    private JPanel panel3;
+    private boolean bloqueo = false;
 
-    //Metodo para activar boton de preparar pitstop
-    public void activarBotonPrepararPitstop(){
+    // Metodo para activar boton de preparar pitstop
+    public void activarBotonPrepararPitstop() {
         iIng.activarBoton();
     }
-    public void setCliente(Interfaz.Cliente clt){
+
+    public void setCliente(Interfaz.Cliente clt) {
         this.clt = clt;
     }
 
-    public void activarBoton(){
+    public void activarBoton() {
         clt.activarBoton();
     }
 
-    public void setInterfazIngeniero(InterfazIngeniero iIng){
+    public void setInterfazIngeniero(InterfazIngeniero iIng) {
         this.iIng = iIng;
     }
 
@@ -53,15 +54,18 @@ public class PanelNeumaticos extends JPanel {
         ws = new Wheel_set();
         ws.setNombre("Neumaticos Blandos");
         ws.setDuracion(20);
-        add(PanelNeumaticoSolo(ws));
+        panel1 = PanelNeumaticoSolo(ws);
+        add(panel1);
         ws = new Wheel_set();
         ws.setNombre("Neumaticos Medios");
         ws.setDuracion(30);
-        add(PanelNeumaticoSolo(ws));
+        panel2 = PanelNeumaticoSolo(ws);
+        add(panel2);
         ws = new Wheel_set();
         ws.setNombre("Neumaticos Duros");
         ws.setDuracion(40);
-        add(PanelNeumaticoSolo(ws));
+        panel3 = PanelNeumaticoSolo(ws);
+        add(panel3);
 
         setSize(270, 150);
         ;
@@ -105,20 +109,32 @@ public class PanelNeumaticos extends JPanel {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                seleccionarPanel(panel);
-                if(iIng != null){
-                    
-                    activarBotonPrepararPitstop();
+                if (panel.isEnabled()) {
+                    seleccionarPanel(panel);
+                    if (iIng != null) {
+                        activarBotonPrepararPitstop();
+                    }
+                    if (clt != null) {
+                        activarBoton();
+                    }
                 }
-                if(clt != null){
-                    activarBoton();
-                }
-                
             }
         });
 
         return panel;
 
+    }
+
+    public void BloquearSeleccionNeumaticos() {
+        bloqueo = true;
+        // les quitamos los listeners a los paneles
+        panel1.removeMouseListener(panel1.getMouseListeners()[0]);
+        panel2.removeMouseListener(panel2.getMouseListeners()[0]);
+        panel3.removeMouseListener(panel3.getMouseListeners()[0]);
+        panel1.setBackground(Color.LIGHT_GRAY);
+        panel2.setBackground(Color.LIGHT_GRAY);
+        panel3.setBackground(Color.LIGHT_GRAY);
+        repaint();
     }
 
     private void seleccionarPanel(JPanel panel) {
@@ -128,7 +144,6 @@ public class PanelNeumaticos extends JPanel {
         selectedPanel = panel;
         selectedPanel.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
     }
-
 
     public Wheel_set getNeumaticosSeleccionados() {
         if (selectedPanel == null) {
@@ -141,8 +156,12 @@ public class PanelNeumaticos extends JPanel {
 
         return new Wheel_set(nombre, duracion);
     }
-public void seleccionarNeumaticos(String neumaticos) {
-        //Seleccionar panel
+
+    public void seleccionarNeumaticos(String neumaticos) {
+        if (bloqueo) {
+            return;
+        }
+        // Seleccionar panel
         for (Component component : getComponents()) {
             JPanel panel = (JPanel) component;
             JLabel label = (JLabel) panel.getComponent(0);
@@ -152,6 +171,7 @@ public void seleccionarNeumaticos(String neumaticos) {
             }
         }
     }
+
     public static void main(String[] args) {
         // Ejecutar en el hilo de despacho de eventos de Swing
         SwingUtilities.invokeLater(new Runnable() {
@@ -172,33 +192,64 @@ public void seleccionarNeumaticos(String neumaticos) {
 
                 // Hacer visible el marco
                 frame.setVisible(true);
+                panel.BloquearSeleccionNeumaticos();
             }
+
         });
     }
 
-    // Para probar el panel
-    public void probarPanel() {
-        // Ejecutar en el hilo de despacho de eventos de Swing
-        SwingUtilities.invokeLater(new Runnable() {
+    public void DesbloquearSeleccionNeumaticos() {
+        bloqueo = false;
+        panel1.addMouseListener(new MouseAdapter() {
             @Override
-            public void run() {
-                // Crear el marco principal
-                JFrame frame = new JFrame("Prueba Panel Neumáticos");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                // Crear una instancia de PanelNeumaticos y agregarla al marco
-                PanelNeumaticos panel = new PanelNeumaticos();
-                frame.add(panel);
-                // Ajustar el tamaño del marco según los componentes
-                frame.setBounds(0, 0, 900, 150);
-
-                // Centrar el marco en la pantalla
-                frame.setLocationRelativeTo(null);
-
-                // Hacer visible el marco
-                frame.setVisible(true);
+            public void mouseClicked(MouseEvent e) {
+                if (panel1.isEnabled()) {
+                    seleccionarPanel(panel1);
+                    if (iIng != null) {
+                        activarBotonPrepararPitstop();
+                    }
+                    if (clt != null) {
+                        activarBoton();
+                    }
+                }
             }
         });
+        panel2.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (panel2.isEnabled()) {
+                    seleccionarPanel(panel2);
+                    if (iIng != null) {
+                        activarBotonPrepararPitstop();
+                    }
+                    if (clt != null) {
+                        activarBoton();
+                    }
+                }
+            }
+        });
+        panel3.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (panel3.isEnabled()) {
+                    seleccionarPanel(panel3);
+                    if (iIng != null) {
+                        activarBotonPrepararPitstop();
+                    }
+                    if (clt != null) {
+                        activarBoton();
+                    }
+                }
+            }
+        });
+        panel1.setBackground(Color.WHITE);
+        panel2.setBackground(Color.WHITE);
+        panel3.setBackground(Color.WHITE);
+        repaint();
     }
+
+    // Ejecutar en el hilo de despacho de eventos de Swing
+
+    // Ejecutar
 
 }

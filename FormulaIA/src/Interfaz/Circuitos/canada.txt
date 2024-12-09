@@ -35,7 +35,7 @@
 208,115 pits
 237,126 pits
 261,134 pits
-292,147 pits
+292,147 taller
 323,160 pits
 353,170 pits
 386,184 pits

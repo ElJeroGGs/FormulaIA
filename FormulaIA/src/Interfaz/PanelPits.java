@@ -49,13 +49,16 @@ public class PanelPits extends JPanel {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         setImagenPreparacion();
+            
                     }
                 });
                 time2.start();
                 
             }
+            
         });
         time.start();
+        
     }
 
     //Metodo para imagen inicial
@@ -70,6 +73,7 @@ public class PanelPits extends JPanel {
         add(label);
         repaint();
         this.estado = "preparado";
+    
     }
 
      // Metodo para correr el gif

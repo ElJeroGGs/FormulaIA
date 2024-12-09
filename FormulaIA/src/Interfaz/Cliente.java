@@ -180,6 +180,7 @@ public class Cliente extends JFrame{
         InterfazPiloto interfaz = new InterfazPiloto(ss, circuito, ws);
         interfaz.setVisible(true);
         cliente.setInterfazPiloto(interfaz);
+        
         this.dispose();
     }
 

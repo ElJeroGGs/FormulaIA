@@ -31,6 +31,7 @@ public class InterfazMecanico extends JFrame {
     PanelNeumaticos panelNeumaticos;
     JButton confirmarPitstopButton;
     boolean confirmado = false;
+    JButton prepararPitstopButton;
 
     public void setMecanico(AgentController mecanico) {
         this.mecanico = mecanico;
@@ -64,11 +65,14 @@ public class InterfazMecanico extends JFrame {
         add(panelSolicitudes);
         
 
-        JButton prepararPitstopButton = new JButton("Preparar Pitstop");
+        prepararPitstopButton = new JButton("Preparar Pitstop");
         prepararPitstopButton.setFont(font);
         prepararPitstopButton.setForeground(Color.WHITE);
         prepararPitstopButton.setBackground(Color.BLACK);
         prepararPitstopButton.setBounds(450, 80, 250, 25);
+        
+        this.prepararPitstopButton.setEnabled(false);
+        
         add(prepararPitstopButton);
 
         confirmarPitstopButton = new JButton("Confirmar Pitstop");
@@ -91,7 +95,10 @@ public class InterfazMecanico extends JFrame {
 
         prepararPitstopButton.addActionListener(e -> {
             //iIng.agregarMensajePiloto("Pitstop en preparación");
+            
+        this.prepararPitstopButton.setEnabled(false);
             pPits.setImagenInicial();
+           
 
         });
 
@@ -103,6 +110,7 @@ public class InterfazMecanico extends JFrame {
         //panel de neumáticos
         panelNeumaticos = new PanelNeumaticos();
         panelNeumaticos.setBounds(350, 250, 410, 150);
+        panelNeumaticos.BloquearSeleccionNeumaticos();
         add(panelNeumaticos);
 
         //Agregamos panel de Pitstop
@@ -117,7 +125,10 @@ public class InterfazMecanico extends JFrame {
     //Metodo para seleccionar neumáticos
     public void seleccionarNeumaticos(String nombre) {
         //Seleccionar neumáticos
+        
+        this.prepararPitstopButton.setEnabled(true);
         panelNeumaticos.seleccionarNeumaticos(nombre);
+        panelNeumaticos.BloquearSeleccionNeumaticos();
         //Después de 5 segundos se limpia el solicitudesArea
         new Thread(() -> {
             try {
@@ -141,9 +152,12 @@ public class InterfazMecanico extends JFrame {
 
     }
 
+    
+
     // Metodo para confirmar pitstop con Ingeniero
     public void confirmarPitstop() throws IOException {
         // Confirmar pitstop con el ingeniero
+        this.confirmarPitstopButton.setEnabled(false);
         this.confirmado = true;
     }
 
@@ -157,7 +171,12 @@ public class InterfazMecanico extends JFrame {
         interfazMecanico.setVisible(true);
     }
 
+    public void DesbloquearSeleccionNeumaticos() {
+        panelNeumaticos.DesbloquearSeleccionNeumaticos();
+    }
+
     public void confirmarParada() {
+        
         //Verifica que los mecanicos estén listos
         while (!this.pPits.getEstado().equals("preparado")) {
 
@@ -181,26 +200,19 @@ public class InterfazMecanico extends JFrame {
                 e.printStackTrace();
             }
         }
+       
 
     }
 
     public void Pits() {
         //Esperamos 3 segundos y corremos gif pits
-        remove(pPits);
-        Timer timer = new Timer(3000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pPits = null;
-                repaint();
-                pPits = new PanelPits();
-                pPits.setBounds(50, 250, 300, 300);
-                add(pPits);
-                pPits.correrGif();
-            }
-        });
-        timer.setRepeats(false);
-        timer.start();
-            
+        remove(pPits); 
+        pPits = null;
+        repaint();
+        pPits = new PanelPits();
+        pPits.setBounds(50, 250, 300, 300);
+        add(pPits);
+        pPits.correrGif();
                 
                 
       

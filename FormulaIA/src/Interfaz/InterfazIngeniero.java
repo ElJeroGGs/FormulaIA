@@ -16,6 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,6 +41,8 @@ public class InterfazIngeniero extends JFrame {
     private DecimalFormat decimalFormat = new DecimalFormat("#.##");
     private double desgasteNeumaticos = 0;
     private JLabel imagenCoche;
+    ObjectOutputStream out;
+    private int contadorAgente = 0;
 
     public void setMainContainer(AgentContainer mainContainer) {
         this.mainContainer = mainContainer;
@@ -75,11 +78,11 @@ public class InterfazIngeniero extends JFrame {
     }
 
 
-    public InterfazIngeniero(DataOutputStream ss) {
+    public InterfazIngeniero(DataOutputStream ss) throws Exception {
         this.salidaServidor = ss;
 
         Font font = new Font("Arial", Font.BOLD, 20);
-        this.salidaServidor = ss;
+        
         setTitle("Interfaz Ingeniero");
         setSize(750, 790);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -152,6 +155,7 @@ public class InterfazIngeniero extends JFrame {
         panelNeumaticos.setBounds(250, 15, 450, 180);
        
         panelNeumaticos.setInterfazIngeniero(this);
+        panelNeumaticos.BloquearSeleccionNeumaticos();
         panelPrincipal.add(panelNeumaticos);
 
         // Panel para pronóstico de la carrera
@@ -187,7 +191,14 @@ public class InterfazIngeniero extends JFrame {
 
     
         confirmarPitstop.addActionListener(e -> {
-            interfazMecanico.Pits();
+            confirmarPitstop.setEnabled(false);
+            confirmarPitstop.setVisible(false);
+            
+           
+            try {
+                salidaServidor.writeUTF("Entra a boxes");
+            } catch (Exception h) {
+            }
         });
 
 //Hasta que no se active el boton de mandar a boxes no se podra confirmar el pitstop
@@ -199,6 +210,13 @@ public class InterfazIngeniero extends JFrame {
         panelPrincipal.setBounds(15, 15, 1000, 1000);
         add(panelPrincipal);
 
+    }
+
+    
+
+    public void desbloqueoPits(){
+        panelNeumaticos.DesbloquearSeleccionNeumaticos();
+        interfazMecanico.DesbloquearSeleccionNeumaticos();
     }
     public void activarBoton(){
         prepararPitstop.setEnabled(true);
@@ -214,13 +232,14 @@ public class InterfazIngeniero extends JFrame {
 
     private void llamarMecanicos() {
         // Lógica para llamar a los mecánicos
+        prepararPitstop.setEnabled(false);
         //Obtener el neumático seleccionado
         Wheel_set ws = panelNeumaticos.getNeumaticosSeleccionados();
         Object[] args = new Object[2];
         args[0] = ws;
         args[1] = this;
         
-      
+      this.panelNeumaticos.BloquearSeleccionNeumaticos();
 
         try {
             AgentController ingeniero_pista = mainContainer.createNewAgent("Ingeniero", "Agentes.Ingeniero_pista", args);
@@ -257,6 +276,8 @@ public class InterfazIngeniero extends JFrame {
         } catch (NumberFormatException e) {
             // Manejar el error si el desgaste no es un número válido
             desgasteNeumaticosLabel.setText("Error");
+            //en caso de error se reinicia el scheduler
+            reiniciarScheduler();
         }
     }
 
@@ -346,8 +367,27 @@ public class InterfazIngeniero extends JFrame {
 
     // Método para probar la interfaz
     public static void main(String[] args) {
-        InterfazIngeniero interfazIngeniero = new InterfazIngeniero(null);
+        InterfazIngeniero interfazIngeniero;
+        try {
+            interfazIngeniero = new InterfazIngeniero(null);
+            
         interfazIngeniero.setVisible(true);
         interfazIngeniero.iniciarMonitoreoDesgasteLlantas();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void cambioLlantas() {
+
+        //Obtenemos neumaticos seleccionados
+        Wheel_set ws = panelNeumaticos.getNeumaticosSeleccionados();
+
+        //Cambiamos las llantas de la interfaz cliente
+        try {
+            salidaServidor.writeUTF(ws.getNombre());
+        } catch (Exception e) {
+        }
     }
 }
