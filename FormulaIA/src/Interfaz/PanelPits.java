@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import Sonido.musica;
 
 public class PanelPits extends JPanel {
 
@@ -89,6 +90,7 @@ public class PanelPits extends JPanel {
         int gifDuration = 4270; // 5 segundos
 
         // Iniciar el temporizador para ejecutar una acción después de que el GIF termine
+        musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\Ferrari's 1.97-Second Pit Stop _ 2018 Brazilian Grand Prix [OAd_t4wibM0].wav");
         timer = new Timer(gifDuration, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

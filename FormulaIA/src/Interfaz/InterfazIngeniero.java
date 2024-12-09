@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 
 import Agentes.Ingeniero_pista;
 import Agentes.Wheel_set;
+import Sonido.musica;
 import jade.core.AID;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
@@ -23,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import jade.wrapper.AgentContainer;
+import Sonido.musica;
 
 public class InterfazIngeniero extends JFrame {
     private JTextArea mensajesPilotoArea;
@@ -168,6 +170,7 @@ public class InterfazIngeniero extends JFrame {
         prepararPitstop.setBounds(700, 220, 200, 50);
         panelPrincipal.add(prepararPitstop);
         prepararPitstop.addActionListener(e -> {
+            musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\F1 Radio Notification Sound.wav");
             llamarMecanicos();
         });
         //Desactivamos el boton hasta que se seleccione un neumático
@@ -183,6 +186,7 @@ public class InterfazIngeniero extends JFrame {
 
     
         confirmarPitstop.addActionListener(e -> {
+            musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\F1 Radio Notification Sound.wav");
             confirmarPitstop.setEnabled(false);
             confirmarPitstop.setVisible(false);
             
@@ -249,6 +253,15 @@ public class InterfazIngeniero extends JFrame {
 
     // Método para actualizar los mensajes del piloto
     public void agregarMensajePiloto(String mensaje) {
+        if(mensaje.contains("Vuelta")){
+        }
+        if(mensaje.contains("subió")){
+            musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\Arcade-8-bit-jump-813.wav");
+        }
+        if(mensaje.contains("bajó")){
+            musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\Arcade-8-bit-death-289.wav");
+        }
+
         mensajesPilotoArea.append(mensaje + "\n");
     }
 
@@ -287,6 +300,14 @@ public class InterfazIngeniero extends JFrame {
             @Override
             public void run() {
                 if(desgasteNeumaticos>100){
+                    
+                    try {
+                        salidaServidor.writeUTF("fuera");
+                    } catch (Exception e) {
+                        System.out.println("Error al enviar la solicitud de preugabas: " + e.getMessage());
+                        e.printStackTrace();
+                        reiniciarScheduler();
+                    }
                     scheduler.shutdown();
                 }else{
                     try {

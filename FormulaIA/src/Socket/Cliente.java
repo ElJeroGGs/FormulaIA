@@ -52,6 +52,12 @@ public class Cliente extends Conexion implements Runnable {
                     
                 }
 
+                if(mensaje.equals("fuera")){
+                   interfazPiloto.setFinalCarrera(true);
+                   interfazPiloto.setFuera();
+                    
+                }
+
                 if(mensaje.contains("boxes")){
                     if(!interfazPiloto.getFinCarrera()){
                         this.interfazPiloto.activarBotonBoxes();

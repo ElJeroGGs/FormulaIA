@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import Sonido.musica;
 
 public class PanelPista extends JPanel implements ActionListener {
     private int x;
@@ -216,7 +217,10 @@ public boolean getFinCarrera(){
         int numero = rand.nextInt(16) + 5;
         setPosicion(numero);
         //Clasificacion
-        interfazPiloto.setClasificacion();
+        if(interfazPiloto != null){
+            interfazPiloto.setClasificacion();
+        }
+        
           // Crear un temporizador para cambiar la imagen cada 1 segundo
         Timer overlayTimer = new Timer(1000, new ActionListener() {
             
@@ -224,10 +228,14 @@ public boolean getFinCarrera(){
             public void actionPerformed(ActionEvent e) {
                 overlayIndex++;
                 if (overlayIndex < overlayIcons.size()) {
+                    if(overlayIndex < 5){
+                        musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\F1 Starting lights sound + download.wav");
+                    }
+                    
                     overlayLabel.setIcon(overlayIcons.get(overlayIndex));
                     // Si es la última iteración, ajustar el temporizador para que dure menos tiempo
-                    if (overlayIndex == overlayIcons.size() - 1) {
-                        ((Timer) e.getSource()).setDelay(500); // Duración de la última imagen
+                    if (overlayIndex == overlayIcons.size() - 2) {
+                        ((Timer) e.getSource()).setDelay(150); // Duración de la última imagen
                     }
                 } else {
                     ((Timer) e.getSource()).stop();
@@ -467,6 +475,9 @@ public boolean getFinCarrera(){
     }
 
     public void NuevaPosicion(int pos){
+        int posAnterior = this.posicion;
+
+    
         
         if(this.posicion + pos >= 20){
             this.posicion = 20;
@@ -476,6 +487,11 @@ public boolean getFinCarrera(){
         this.posicion += pos;
     }
 
+    if(posAnterior == this.posicion){
+        interfazPiloto.mismaPosicion();
+        return;
+
+    }
     //Si la nueva posicion es menor a la actual, se sube de posicion
     if(pos < 0){
         interfazPiloto.subioPosicion();
@@ -630,5 +646,8 @@ public boolean getFinCarrera(){
     public void setPosicion(int p){
         this.posicion = p;
 
+    }
+    public int getPosicionNum() {
+        return this.posicion;
     }
 }

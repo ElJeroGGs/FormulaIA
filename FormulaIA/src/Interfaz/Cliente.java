@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
 import Agentes.Wheel_set;
+import Sonido.musica;
 
 //Interfaz que sirve para configurar la conexion desde el servidor
 public class Cliente extends JFrame{
@@ -25,8 +26,12 @@ public class Cliente extends JFrame{
     JTextPane lblNombrePiloto;
     JTextPane txtNumeroVueltas;
 
+    
+
 
     public Cliente(DataOutputStream salidaServidor, Socket.Cliente cliente){ 
+        //Reproducimos música 
+        musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\F1 Theme - Build Up & Starting Grid.wav");
         this.cliente = cliente;
         this.ss = salidaServidor;
         Font font = new Font("Arial", Font.BOLD, 20);
@@ -63,7 +68,10 @@ public class Cliente extends JFrame{
         lblFlechaIzq.setForeground(Color.BLACK);
         lblFlechaIzq.setBackground(Color.WHITE);
         add(lblFlechaIzq);
-        lblFlechaIzq.addActionListener(e -> cambiarCircuito("izquierda"));
+        lblFlechaIzq.addActionListener(e -> {
+            cambiarCircuito("izquierda");
+            musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\Game-select-730.wav");
+        });
 
         JButton lblFlechaDer = new JButton(">");
         lblFlechaDer.setBounds(450, 650, 70, 70);
@@ -72,7 +80,10 @@ public class Cliente extends JFrame{
         lblFlechaDer.setForeground(Color.BLACK);
         lblFlechaDer.setBackground(Color.WHITE);
         add(lblFlechaDer);
-        lblFlechaDer.addActionListener(e -> cambiarCircuito("derecha"));
+        lblFlechaDer.addActionListener(e -> {
+            cambiarCircuito("derecha");
+            musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\Game-select-730.wav");
+        });
 
         //Boton para comenzar la carrera
         btnComenzarCarrera = new JButton("Comenzar carrera");
@@ -126,6 +137,7 @@ public class Cliente extends JFrame{
         txtNumeroVueltas.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 String numero = txtNumeroVueltas.getText();
+                musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\Optical-keyboard-keystroke-pressing-single-key-891.wav");
 
                 if (numero.length() > 2) {
                     evt.consume();
@@ -145,6 +157,7 @@ public class Cliente extends JFrame{
         //Agregamos un listener para activar el boton de comenzar carrera
         lblNombrePiloto.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
+                musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\Optical-keyboard-keystroke-pressing-single-key-891.wav");
                 activarBoton();
             }
         });
@@ -274,12 +287,20 @@ public class Cliente extends JFrame{
         Wheel_set ws = panelNeumaticos.getNeumaticosSeleccionados();
         String circuito = getNombreCircuito();
 
+        
+        
+        musica.detenerMusica();
+        musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\Simulation-building-game-menu-ui-confirm-799.wav");
+
         InterfazPiloto interfaz = new InterfazPiloto(ss, circuito, ws);
         interfaz.setVisible(true);
         cliente.setInterfazPiloto(interfaz);
         interfaz.setVueltas(Integer.parseInt(txtNumeroVueltas.getText()));
         interfaz.setNombrePiloto(lblNombrePiloto.getText());
+
         this.dispose();
+        
+        
     }
 
     //Metodo para cambiar valor de circuito
@@ -311,7 +332,7 @@ public class Cliente extends JFrame{
     }
 
     public void activarBoton() {
-        if(this.txtNumeroVueltas.getText().length() > 0 && this.lblNombrePiloto.getText().length() > 0){
+        if(this.txtNumeroVueltas.getText().length() > 0 && this.lblNombrePiloto.getText().length() > 0 && panelNeumaticos.getNeumaticosSeleccionados() != null){
             this.btnComenzarCarrera.setEnabled(true);
         btnComenzarCarrera.setEnabled(true);
         }

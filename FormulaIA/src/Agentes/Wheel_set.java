@@ -52,7 +52,7 @@ public class Wheel_set implements Concept{
     }
 
     public void setDesgaste(){
-        this.duracion_actuald = duracion_actuald-0.01;
+        this.duracion_actuald = duracion_actuald-0.05;
     }
 
 }

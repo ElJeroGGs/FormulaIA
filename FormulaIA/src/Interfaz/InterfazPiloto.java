@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Font;
 
 import Socket.Cliente;
+import Sonido.musica;
 
 public class InterfazPiloto extends JFrame{
     private DataOutputStream salidaServidor;
@@ -90,6 +91,15 @@ public class InterfazPiloto extends JFrame{
 
     public void setFinalCarrera(boolean finCarrera){
         this.finCarrera = finCarrera;
+        musica.detenerMusica();
+
+        if(juegoActual.getDesgaste() > 100){
+            musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\ACCIDENTE ROMAIN GROSJEAN _ROMAIN GROSJEAN CRASH - Formula 1 Bahrain GP [3qnEF9B_JYA].wav");
+        } 
+//Si termina en primera posicion
+        if(pistaPanel.getPosicionNum() == 1){
+            musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\Antonio Lobato y su narración de la última vuelta de Verstappen y Hamilton en Abu Dhabi _ #F1 [g4vhRRwsDp8].wav");
+        }
         try {
             salidaServidor.writeUTF("Fin de la carrera");
             salidaServidor.writeUTF(nombrePiloto+" terminó en "+pistaPanel.getPosicion());
@@ -98,6 +108,7 @@ public class InterfazPiloto extends JFrame{
     }
 
     public InterfazPiloto(DataOutputStream salidaServidor, String circuito, Wheel_set jA) {
+        musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\inicio_carrera.wav");
 
         this.juegoActual = jA;
 
@@ -114,7 +125,9 @@ public class InterfazPiloto extends JFrame{
         btnSolicitarCambio.setForeground(Color.white);
         btnSolicitarCambio.setFocusPainted(false);
         btnSolicitarCambio.setBounds(50, 450, 350, 70);
-        btnSolicitarCambio.addActionListener(e -> solicitarCambioLlantas());
+        btnSolicitarCambio.addActionListener(e -> {solicitarCambioLlantas();
+        musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\F1 Radio Notification Sound.wav");
+    });
         btnSolicitarCambio.setEnabled(false);
         add(btnSolicitarCambio);
 
@@ -127,7 +140,8 @@ public class InterfazPiloto extends JFrame{
         btnComenzarCarrera.setBounds(450, 450, 300, 70);
         add(btnComenzarCarrera);
         btnComenzarCarrera.addActionListener(e -> {
-            
+            musica.detenerMusica();
+            musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\F1 Radio Notification Sound.wav");
             pistaPanel.startLap();
             btnComenzarCarrera.setEnabled(false);
             try {
@@ -177,6 +191,8 @@ public class InterfazPiloto extends JFrame{
         add(btnEntrarBoxes);
 
         btnEntrarBoxes.addActionListener(e -> {
+            
+            musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\F1 Radio Notification Sound.wav");
             pistaPanel.EntrarBoxes();
             btnEntrarBoxes.setVisible(false);
             btnSolicitarCambio.setVisible(true);
@@ -196,6 +212,7 @@ public class InterfazPiloto extends JFrame{
     }
 
     public void activarBotonBoxes(){
+        new Thread(() -> musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\box box box sound f1.wav")).start();
         btnSolicitarCambio.setEnabled(false);
         btnSolicitarCambio.setVisible(false);
         btnEntrarBoxes.setEnabled(true);
@@ -225,6 +242,11 @@ public class InterfazPiloto extends JFrame{
     if(finCarrera){
         this.lblLeaderboard.setText(nombrePiloto+" terminó en "+pistaPanel.getPosicion());
     }
+    }
+
+
+    public void setFuera(){
+        lblLeaderboard.setText(nombrePiloto+" se salió de la pista");
     }
 
     public void VueltaCompletada (){
@@ -319,7 +341,7 @@ btnEntrarBoxes.setVisible(true);
     }
 
     public void iniciarCarrera() {
-
+        musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\comienzo_carrera.wav");
         setResultado();
         try {
             salidaServidor.writeUTF("comienzo");
@@ -353,5 +375,12 @@ btnEntrarBoxes.setVisible(true);
     public void setVueltas(int vueltas) {
         this.pistaPanel.setVueltas(vueltas);
         lblNumeroVueltas.setText("Vueltas:"+pistaPanel.getVueltasCompletadas()+"/"+pistaPanel.getNumeroVueltas());
+    }
+
+    public void mismaPosicion() {
+        try {
+            salidaServidor.writeUTF(nombrePiloto+" se mantiene en la misma posición"+", se encuentra en "+pistaPanel.getPosicion());
+        } catch (Exception e) {
+        }
     }
 }

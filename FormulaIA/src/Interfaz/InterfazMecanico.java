@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 
 import Agentes.mecanico;
 import jade.wrapper.AgentController;
+import Sonido.musica;
 
 public class InterfazMecanico extends JFrame {
     JTextArea solicitudesArea;
@@ -85,6 +86,7 @@ public class InterfazMecanico extends JFrame {
         confirmarPitstopButton.setEnabled(false);
         // Agregar acción al botón de confirmar pitstop
         confirmarPitstopButton.addActionListener(e -> {
+            musica.reproducirAudio("FormulaIA\\src\\Sonido\\sounds\\F1 Radio Notification Sound.wav");
             try {
                 confirmarPitstop();
 

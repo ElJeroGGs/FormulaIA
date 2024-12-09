@@ -139,6 +139,8 @@ try {
 
                     
                 }
+
+                
                 if(mensaje.contains("posición")){
                     interfazIn.agregarMensajePiloto(mensaje);
                 }

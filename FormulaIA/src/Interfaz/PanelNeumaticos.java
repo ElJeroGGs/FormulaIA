@@ -17,6 +17,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import Sonido.musica;
 
 public class PanelNeumaticos extends JPanel {
     private JPanel selectedPanel;
@@ -143,6 +144,7 @@ public class PanelNeumaticos extends JPanel {
         }
         selectedPanel = panel;
         selectedPanel.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+        musica.reproducirSonido("FormulaIA\\src\\Sonido\\sounds\\Gear-turning-ticking-162.wav");
     }
 
     public Wheel_set getNeumaticosSeleccionados() {
