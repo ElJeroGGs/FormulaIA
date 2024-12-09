@@ -185,7 +185,9 @@ public class InterfazPiloto extends JFrame{
 
     public void activarBotonBoxes(){
         btnSolicitarCambio.setEnabled(false);
+        btnSolicitarCambio.setVisible(false);
         btnEntrarBoxes.setEnabled(true);
+        btnEntrarBoxes.setVisible(true);
     }
 
     // Método para iniciar el temporizador que actualiza el tiempo por vuelta

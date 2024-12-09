@@ -272,7 +272,7 @@ public class InterfazIngeniero extends JFrame {
             String desgasteSinPalabra = desgaste.replace("desgaste ", "").trim();
             double desgasteDouble = Double.parseDouble(desgasteSinPalabra);
             String desgasteFormateado = decimalFormat.format(desgasteDouble);
-            desgasteNeumaticosLabel.setText("desgaste: "+desgasteFormateado + "%");
+            desgasteNeumaticosLabel.setText("Desgaste de los Neumaticos: "+desgasteFormateado + "%");
         } catch (NumberFormatException e) {
             // Manejar el error si el desgaste no es un número válido
             desgasteNeumaticosLabel.setText("Error");
