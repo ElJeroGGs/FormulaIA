@@ -349,4 +349,9 @@ btnEntrarBoxes.setVisible(true);
         } catch (Exception e) {
         }
     }
+
+    public void setVueltas(int vueltas) {
+        this.pistaPanel.setVueltas(vueltas);
+        lblNumeroVueltas.setText("Vueltas:"+pistaPanel.getVueltasCompletadas()+"/"+pistaPanel.getNumeroVueltas());
+    }
 }

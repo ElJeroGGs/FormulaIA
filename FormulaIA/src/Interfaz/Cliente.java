@@ -2,6 +2,7 @@ package Interfaz;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import java.io.DataOutputStream;
 
 import javax.swing.JButton;
@@ -22,6 +23,7 @@ public class Cliente extends JFrame{
     DataOutputStream ss;
     Socket.Cliente cliente;
     JTextPane lblNombrePiloto;
+    JTextPane txtNumeroVueltas;
 
 
     public Cliente(DataOutputStream salidaServidor, Socket.Cliente cliente){ 
@@ -87,16 +89,93 @@ public class Cliente extends JFrame{
 
         //Etiqueta Escoge el nombre de tu piloto
         JLabel lblEscogerPiloto = new JLabel("Escribe el nombre de tu piloto");
-        lblEscogerPiloto.setBounds(210, 850, 390, 30);
+        lblEscogerPiloto.setBounds(90, 850, 390, 30);
         lblEscogerPiloto.setFont(font); 
         add(lblEscogerPiloto);
         //Recuadro para escribir el nombre del piloto
         lblNombrePiloto = new JTextPane();
-        lblNombrePiloto.setBounds(170, 900, 390, 30);
+        lblNombrePiloto.setBounds(50, 900, 390, 30);
         lblNombrePiloto.setFont(font);
         lblNombrePiloto.setEditable(true);
         lblNombrePiloto.setBorder(new javax.swing.border.LineBorder(Color.BLACK, 1, true));
         add(lblNombrePiloto);
+
+        //lbl numero de vueltas
+        JLabel lblNumeroVueltas = new JLabel("Numero de vueltas");
+        lblNumeroVueltas.setBounds(500, 850, 390, 30);
+        lblNumeroVueltas.setFont(font);
+        add(lblNumeroVueltas);
+        //Recuadro para escribir el numero de vueltas
+        txtNumeroVueltas = new JTextPane();
+        txtNumeroVueltas.setBounds(500, 900, 150, 30);
+        txtNumeroVueltas.setFont(font);
+
+        txtNumeroVueltas.setEditable(true);
+        txtNumeroVueltas.setBorder(new javax.swing.border.LineBorder(Color.BLACK, 1, true));
+        add(txtNumeroVueltas);
+        //Solo numeros positivos 
+        txtNumeroVueltas.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                char c = evt.getKeyChar();
+                if (!(Character.isDigit(c) || (c == KeyEvent.VK_BACK_SPACE) || (c == KeyEvent.VK_DELETE))) {
+                    evt.consume();
+                }
+            }
+        });
+        //Solo numero entre 1 y 100
+        txtNumeroVueltas.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                String numero = txtNumeroVueltas.getText();
+
+                if (numero.length() > 2) {
+                    evt.consume();
+                }else{
+                    if(numero.length() == 2){
+                        if(numero.charAt(0) == '1'){
+                            if(numero.charAt(1) > '0'){
+                                evt.consume();
+                            }
+                        }else{
+                            evt.consume();
+                        }
+                    }
+                }
+            }
+        });
+        //Agregamos un listener para activar el boton de comenzar carrera
+        lblNombrePiloto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                activarBoton();
+            }
+        });
+        txtNumeroVueltas.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                activarBoton();
+            }
+        });
+        //En caso de que se borre el texto
+        lblNombrePiloto.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                if(lblNombrePiloto.getText().length() == 0){
+                    desactivarBoton();
+                } else {
+                    activarBoton();
+                }
+            }
+        });
+        txtNumeroVueltas.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                if(txtNumeroVueltas.getText().length() == 0){
+                    desactivarBoton();
+                } else {
+                    activarBoton();
+                }
+            }
+        });
+
+
 
         
 
@@ -198,6 +277,7 @@ public class Cliente extends JFrame{
         InterfazPiloto interfaz = new InterfazPiloto(ss, circuito, ws);
         interfaz.setVisible(true);
         cliente.setInterfazPiloto(interfaz);
+        interfaz.setVueltas(Integer.parseInt(txtNumeroVueltas.getText()));
         interfaz.setNombrePiloto(lblNombrePiloto.getText());
         this.dispose();
     }
@@ -231,7 +311,14 @@ public class Cliente extends JFrame{
     }
 
     public void activarBoton() {
+        if(this.txtNumeroVueltas.getText().length() > 0 && this.lblNombrePiloto.getText().length() > 0){
+            this.btnComenzarCarrera.setEnabled(true);
         btnComenzarCarrera.setEnabled(true);
+        }
 
+    }
+
+    public void desactivarBoton(){
+        btnComenzarCarrera.setEnabled(false);
     }
 }

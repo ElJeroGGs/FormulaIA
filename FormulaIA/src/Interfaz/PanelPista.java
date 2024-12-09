@@ -41,7 +41,7 @@ public class PanelPista extends JPanel implements ActionListener {
     private List<ImageIcon> overlayIcons;
     private int overlayIndex = 0;
     private InterfazPiloto interfazPiloto;
-    private int NumeroVueltas = 3; // Número de vueltas
+    private int NumeroVueltas = 30; // Número de vueltas
     private int vueltasCompletadas = 0; // Contador de vueltas completadas
     private long startTime; // Tiempo de inicio de la vuelta
     private List<Long> lapTimes = new ArrayList<>(); // Lista de tiempos de vuelta
@@ -57,7 +57,9 @@ private piloto pilo;
 private boolean saliendoPitLane = false;
 private int posicion;
 
-
+public void setVueltas(int vueltas){
+    this.NumeroVueltas = vueltas;
+}
 public boolean getFinCarrera(){
     return finCarrera;
 }
