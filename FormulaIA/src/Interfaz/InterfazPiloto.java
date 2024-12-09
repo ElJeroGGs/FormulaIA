@@ -240,6 +240,7 @@ public class InterfazPiloto extends JFrame{
 
     this.lblLeaderboard.setText(nombrePiloto+" se encuentra en "+pistaPanel.getPosicion());
     if(finCarrera){
+        musica.detenerMusica();
         this.lblLeaderboard.setText(nombrePiloto+" terminó en "+pistaPanel.getPosicion());
     }
     }
