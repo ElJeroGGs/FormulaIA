@@ -139,6 +139,12 @@ try {
 
                     
                 }
+                if(mensaje.contains("posición")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                }
+                if(mensaje.contains("carrera")){
+                    interfazIn.agregarMensajePiloto(mensaje);
+                }
 
                 if (mensaje.equals("Saliendo de Pits")){
                     interfazIn.agregarMensajePiloto(mensaje);

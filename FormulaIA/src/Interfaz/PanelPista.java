@@ -41,7 +41,7 @@ public class PanelPista extends JPanel implements ActionListener {
     private List<ImageIcon> overlayIcons;
     private int overlayIndex = 0;
     private InterfazPiloto interfazPiloto;
-    private int NumeroVueltas = 30; // Número de vueltas
+    private int NumeroVueltas = 3; // Número de vueltas
     private int vueltasCompletadas = 0; // Contador de vueltas completadas
     private long startTime; // Tiempo de inicio de la vuelta
     private List<Long> lapTimes = new ArrayList<>(); // Lista de tiempos de vuelta
@@ -55,6 +55,7 @@ private boolean enTaller = false;
 private int contador = 0;
 private piloto pilo;
 private boolean saliendoPitLane = false;
+private int posicion;
 
 
 public boolean getFinCarrera(){
@@ -125,13 +126,19 @@ public boolean getFinCarrera(){
     }
 
      public void iniciarCarrera() {
-        
-interfazPiloto.iniciarCarrera();
+        if(interfazPiloto != null){
+            //Tomamos un numero al azar entre 1 y 20 
+           
+            interfazPiloto.iniciarCarrera();
+        }
+
         // Programar la tarea para ejecutar setDesgasteNeumaticos 
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 if(finCarrera){
+                    scheduler.shutdown();
+                    //deja de monitorear
                 }else{
                     
                 interfazPiloto.setDesgasteNeumaticos();
@@ -202,8 +209,15 @@ interfazPiloto.iniciarCarrera();
         overlayLabel.setIcon(overlayIcons.get(overlayIndex));
         overlayLabel.setVisible(true);
 
-        // Crear un temporizador para cambiar la imagen cada 1 segundo
+      // Tomar un número al azar entre 5 y 20
+        Random rand = new Random();
+        int numero = rand.nextInt(16) + 5;
+        setPosicion(numero);
+        //Clasificacion
+        interfazPiloto.setClasificacion();
+          // Crear un temporizador para cambiar la imagen cada 1 segundo
         Timer overlayTimer = new Timer(1000, new ActionListener() {
+            
             @Override
             public void actionPerformed(ActionEvent e) {
                 overlayIndex++;
@@ -271,6 +285,7 @@ interfazPiloto.iniciarCarrera();
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        
        
         if (desgasteNeumaticos > 100) {
             timer.stop();
@@ -293,14 +308,19 @@ interfazPiloto.iniciarCarrera();
         } else if (etiqueta.equals("taller")){
             if(contador < 1){
                 try {
-                    interfazPiloto.EntrandoTaller();
+                    if(interfazPiloto != null){
+                        interfazPiloto.EntrandoTaller();
+                    }
+                    
                     Thread.sleep(5000);
             
                 } catch (InterruptedException j) {
                     j.printStackTrace();
                 }
                 contador++;
-                interfazPiloto.saliendoTaller();
+                if(interfazPiloto != null){
+                    interfazPiloto.saliendoTaller();
+                }
             }
             
         }else if (dentroPits) {
@@ -314,8 +334,11 @@ interfazPiloto.iniciarCarrera();
         long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
         lapTimes.add(lapTime);
         startTime = System.currentTimeMillis();
+        if(interfazPiloto != null){
+        calculaPosicion();
         interfazPiloto.VueltaCompletada();
         interfazPiloto.repintarVueltas(); // Reiniciar el tiempo de inicio para la siguiente vuelta
+        }
     
                 }
                 etiqueta = etiquetas.get(currentCheckpointIndex);
@@ -323,7 +346,9 @@ interfazPiloto.iniciarCarrera();
             dentroPits = false;
             usarPits = false;
             //System.out.println("Saliendo de pits");
-            interfazPiloto.saliendoPits();
+            if(interfazPiloto != null){
+                interfazPiloto.saliendoPits();
+            }
         } else if (etiqueta.equals("salida")) {
             currentCheckpointIndex++;
         }
@@ -372,6 +397,7 @@ interfazPiloto.iniciarCarrera();
                     vueltasCompletadas++;
                     long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
                     lapTimes.add(lapTime);
+                    calculaPosicion();
                     startTime = System.currentTimeMillis(); // Reiniciar el tiempo de inicio para la siguiente vuelta
                 }
             }
@@ -382,8 +408,16 @@ interfazPiloto.iniciarCarrera();
         long lapTime = System.currentTimeMillis() - startTime; // Calcular el tiempo de la vuelta
         lapTimes.add(lapTime);
         startTime = System.currentTimeMillis();
+        calculaPosicion();
         interfazPiloto.VueltaCompletada();
         interfazPiloto.repintarVueltas(); // Reiniciar el tiempo de inicio para la siguiente vuelta
+    }
+
+    //Terminar si se completaron todas las vueltas
+    if (vueltasCompletadas == NumeroVueltas) {
+        timer.stop();
+        finCarrera = true;
+        interfazPiloto.setFinalCarrera(true);
     }
     
             // Redibujar el panel para mostrar la nueva posición de la bolita
@@ -404,6 +438,51 @@ interfazPiloto.iniciarCarrera();
         }
         return sb.toString();
     }
+    public void calculaPosicion() {
+        if (lapTimes.size() < 2) {
+            //Tomamos un numero random entre -5 y 5
+            Random rand = new Random();
+            int res = rand.nextInt(11) - 5;
+
+            //sumamos a la posicion actual
+            NuevaPosicion(res);
+            return; // No hay suficientes vueltas para comparar
+        }
+
+        //Tomamos un promedio de todos los tiempos
+        long promedio = 0;
+        for (int i = 0; i < lapTimes.size(); i++) {
+            promedio += lapTimes.get(i);
+        }
+        promedio /= lapTimes.size();
+        //Comparamos el tiempo de la ultima vuelta con el promedio
+        long ultimaVuelta = lapTimes.get(lapTimes.size() - 1);
+        if (ultimaVuelta < promedio) {
+            NuevaPosicion(-1);
+        } else {
+            NuevaPosicion(1);
+        }
+    }
+
+    public void NuevaPosicion(int pos){
+        
+        if(this.posicion + pos >= 20){
+            this.posicion = 20;
+    } else if(this.posicion + pos <= 1){
+        this.posicion = 1;
+    } else {
+        this.posicion += pos;
+    }
+
+    //Si la nueva posicion es menor a la actual, se sube de posicion
+    if(pos < 0){
+        interfazPiloto.subioPosicion();
+    } else if (pos > 0){
+        interfazPiloto.bajoPosicion();
+    }
+    
+
+}
 
     public String getCurrentLapTime() {
         long currentTime = System.currentTimeMillis();
@@ -423,6 +502,18 @@ interfazPiloto.iniciarCarrera();
             g.drawImage(pistaImage, 0, 0, this);
         }
 
+        /*// Dibujar los puntos de control
+        g.setColor(Color.BLUE);
+        for (Point checkpoint : checkpoints) {
+            g.fillOval(checkpoint.x - 5, checkpoint.y - 5, 10, 10);
+        }
+        // Dibujar los puntos de control pits
+        g.setColor(Color.GREEN);
+        for (int i = 0; i < checkpoints.size(); i++) {
+            if (etiquetas.get(i).equals("pits") || etiquetas.get(i).equals("taller") || etiquetas.get(i).equals("salida"))  {
+                g.fillOval(checkpoints.get(i).x - 5, checkpoints.get(i).y - 5, 10, 10);
+            }
+        }*/
 
         // Dibujar la "bolita" si está en pista
         if (enPista) {
@@ -445,7 +536,7 @@ interfazPiloto.iniciarCarrera();
 
             // Ruta del archivo con los puntos de control
             String checkpointsFile = "FormulaIA\\src\\Interfaz\\Circuitos\\usa.txt";
-            PanelPista panel = new PanelPista( "canada"); // Coordenadas iniciales
+            PanelPista panel = new PanelPista( "china"); // Coordenadas iniciales
             panel.EntrarBoxes();
             frame.add(panel);
             
@@ -461,5 +552,81 @@ interfazPiloto.iniciarCarrera();
 
     public boolean getDentroPits() {
         return dentroPits;
+    }
+    public String getPosicion() {
+
+        int num = this.posicion;
+        String pos = num+"";
+
+        switch (num) {
+            case 1:
+                pos+="ra";
+                break;
+            case 2:
+                pos+="da";
+                break;
+            case 3:
+                pos+="ra";
+                break;
+            case 4:
+                pos+="ta";
+                break;
+            case 5:
+                pos+="ta";
+                break;
+            case 6:
+                pos+="ta";
+                break;
+            case 7:
+                pos+="ma";
+                break;
+            case 8:
+                pos+="va";
+                break;
+            case 9:
+                pos+="na";
+                break;
+            case 10:
+                pos+="ma";
+                break;
+            case 11:
+                pos+="va";
+                break;
+            case 12:
+                pos+="va";
+                break;
+            case 13:
+                pos+="va";
+                break;
+            case 14:
+                pos+="ta";
+                break;
+            case 15:
+                pos+="ta";
+                break;
+            case 16:
+                pos+="ta";
+                break;
+            case 17:
+                pos+="ma";
+                break;
+            case 18:
+                pos+="va";
+                break;
+            case 19:
+                pos+="na";
+                break;
+            case 20:
+                pos+="ma";
+                break;
+        }
+
+        pos+=" posición";
+        return pos;
+    }
+
+    public void setPosicion(int p){
+        this.posicion = p;
+
     }
 }

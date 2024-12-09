@@ -8,6 +8,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 
 import Agentes.Wheel_set;
 
@@ -20,6 +21,7 @@ public class Cliente extends JFrame{
     JButton btnComenzarCarrera;
     DataOutputStream ss;
     Socket.Cliente cliente;
+    JTextPane lblNombrePiloto;
 
 
     public Cliente(DataOutputStream salidaServidor, Socket.Cliente cliente){ 
@@ -82,6 +84,22 @@ public class Cliente extends JFrame{
         btnComenzarCarrera.addActionListener(e -> {
             comenzarCarrera();
         });
+
+        //Etiqueta Escoge el nombre de tu piloto
+        JLabel lblEscogerPiloto = new JLabel("Escribe el nombre de tu piloto");
+        lblEscogerPiloto.setBounds(210, 850, 390, 30);
+        lblEscogerPiloto.setFont(font); 
+        add(lblEscogerPiloto);
+        //Recuadro para escribir el nombre del piloto
+        lblNombrePiloto = new JTextPane();
+        lblNombrePiloto.setBounds(170, 900, 390, 30);
+        lblNombrePiloto.setFont(font);
+        lblNombrePiloto.setEditable(true);
+        lblNombrePiloto.setBorder(new javax.swing.border.LineBorder(Color.BLACK, 1, true));
+        add(lblNombrePiloto);
+
+        
+
 
         this.setVisible(true);
     
@@ -180,7 +198,7 @@ public class Cliente extends JFrame{
         InterfazPiloto interfaz = new InterfazPiloto(ss, circuito, ws);
         interfaz.setVisible(true);
         cliente.setInterfazPiloto(interfaz);
-        
+        interfaz.setNombrePiloto(lblNombrePiloto.getText());
         this.dispose();
     }
 

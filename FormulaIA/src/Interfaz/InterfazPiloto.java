@@ -33,6 +33,8 @@ public class InterfazPiloto extends JFrame{
     private List<String> TiemposVueltas = new ArrayList<String>();
     private boolean finCarrera = false;    
     private Timer timere;
+    private JLabel lblLeaderboard;
+    private String nombrePiloto;
     
 
     private JButton btnEntrarBoxes;
@@ -88,6 +90,11 @@ public class InterfazPiloto extends JFrame{
 
     public void setFinalCarrera(boolean finCarrera){
         this.finCarrera = finCarrera;
+        try {
+            salidaServidor.writeUTF("Fin de la carrera");
+            salidaServidor.writeUTF(nombrePiloto+" terminó en "+pistaPanel.getPosicion());
+        } catch (Exception e) {
+        }
     }
 
     public InterfazPiloto(DataOutputStream salidaServidor, String circuito, Wheel_set jA) {
@@ -96,7 +103,7 @@ public class InterfazPiloto extends JFrame{
 
         this.salidaServidor = salidaServidor;
         setTitle("Interfaz Piloto");
-        setSize(900, 600);
+        setSize(1100, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         Font font = new Font("Arial", Font.PLAIN, 20);
@@ -153,8 +160,8 @@ public class InterfazPiloto extends JFrame{
         lblNumeroVueltas.setFont(font);
         add(lblNumeroVueltas);
 
-        JLabel lblLeaderboard = new JLabel("<html>Leaderboard:<br>1. Piloto A<br>2. Piloto B<br>3. Piloto C</html>");
-        lblLeaderboard.setBounds(550, 150, 200, 100);
+        lblLeaderboard = new JLabel();
+        lblLeaderboard.setBounds(550, 150, 400, 100);
         lblLeaderboard.setFont(font);
         add(lblLeaderboard);
 
@@ -177,6 +184,11 @@ public class InterfazPiloto extends JFrame{
 
     }
 
+    public void setNombrePiloto(String nombrePiloto){
+        this.nombrePiloto = nombrePiloto;
+        lblLeaderboard.setText(nombrePiloto+" se encuentra en "+"clasificación");
+    }
+
     //Metodo para repintar el numero de vueltas
     public void repintarVueltas(){
         lblNumeroVueltas.setText("Vueltas:"+pistaPanel.getVueltasCompletadas()+"/"+pistaPanel.getNumeroVueltas());
@@ -197,6 +209,7 @@ public class InterfazPiloto extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 if(finCarrera){
                     timere.stop();
+                    setResultado();
                 }else{
                     lblTiempoPorVuelta.setText("Tiempo de vuelta:\n" + pistaPanel.getCurrentLapTime());
                 }
@@ -206,8 +219,17 @@ public class InterfazPiloto extends JFrame{
         timere.start();
     }
 
+    public void setResultado(){
+
+    this.lblLeaderboard.setText(nombrePiloto+" se encuentra en "+pistaPanel.getPosicion());
+    if(finCarrera){
+        this.lblLeaderboard.setText(nombrePiloto+" terminó en "+pistaPanel.getPosicion());
+    }
+    }
+
     public void VueltaCompletada (){
 
+        this.setResultado();
 
         try {
             salidaServidor.writeUTF(getTiemposVueltas().get(getTiemposVueltas().size()-1));
@@ -232,7 +254,7 @@ public class InterfazPiloto extends JFrame{
 btnSolicitarCambio.setVisible(false);
 btnEntrarBoxes.setVisible(true);
         try {
-            salidaServidor.writeUTF("El piloto quiere un cambio de llantas");
+            salidaServidor.writeUTF(nombrePiloto+" quiere un cambio de llantas");
         } catch (IOException e) {
             System.out.println("Error al enviar la solicitud: " + e.getMessage());
         }
@@ -242,7 +264,7 @@ btnEntrarBoxes.setVisible(true);
 
     //Metodo para probar la interfaz
     public static void main(String[] args) {
-        InterfazPiloto interfaz = new InterfazPiloto(null, "canada", null);
+        InterfazPiloto interfaz = new InterfazPiloto(null, "usa", null);
         interfaz.setVisible(true);
     }
 
@@ -297,8 +319,33 @@ btnEntrarBoxes.setVisible(true);
     }
 
     public void iniciarCarrera() {
+
+        setResultado();
         try {
             salidaServidor.writeUTF("comienzo");
+        } catch (Exception e) {
+        }
+    }
+
+    public void setClasificacion() {
+
+        lblLeaderboard.setText(nombrePiloto+" clasificó en "+pistaPanel.getPosicion());
+        try {
+            salidaServidor.writeUTF(nombrePiloto+" clasificó en "+pistaPanel.getPosicion());
+        } catch (Exception e) {
+        }
+    }
+
+    public void subioPosicion() {
+        try {
+            salidaServidor.writeUTF(nombrePiloto+" subió de posición"+" ahora se encuentra en "+pistaPanel.getPosicion());
+        } catch (Exception e) {
+        }
+    }
+
+    public void bajoPosicion() {
+        try {
+            salidaServidor.writeUTF(nombrePiloto+" bajó de posición"+" ahora se encuentra en "+pistaPanel.getPosicion());
         } catch (Exception e) {
         }
     }

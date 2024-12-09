@@ -84,7 +84,7 @@ public class InterfazIngeniero extends JFrame {
         Font font = new Font("Arial", Font.BOLD, 20);
         
         setTitle("Interfaz Ingeniero");
-        setSize(750, 790);
+        setSize(1150, 790);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panelPrincipal = new JPanel(new GridLayout(5, 1));
         panelPrincipal.setLayout(null);
@@ -101,12 +101,12 @@ public class InterfazIngeniero extends JFrame {
         titulo.setFont(font);
         panelMensajesPiloto.add(titulo, BorderLayout.NORTH);
         panelMensajesPiloto.setPreferredSize(new Dimension(1000, 200));
-        panelMensajesPiloto.setBounds(0, 0, 250, 375);
+        panelMensajesPiloto.setBounds(0, 0, 550, 375);
 
         panelPrincipal.add(panelMensajesPiloto);
         // Etiqueta "Información de la carrera"
         JLabel infoCarrera = new JLabel("Información de la carrera");
-        infoCarrera.setBounds(370, 320, 500, 50);
+        infoCarrera.setBounds(280, 380, 500, 50);
         infoCarrera.setFont(font);
         panelPrincipal.add(infoCarrera);
 
@@ -135,7 +135,7 @@ public class InterfazIngeniero extends JFrame {
         vueltasRestantesLabel.setFont(font);
         vueltasRestantesLabel.setBounds(30, 30, 200, 50);
         panelVueltasRestantes.add(vueltasRestantesLabel);
-        panelVueltasRestantes.setBounds(250, 355, 450, 70);
+        panelVueltasRestantes.setBounds(250, 400, 450, 70);
         panelPrincipal.add(panelVueltasRestantes);
 
         // Panel para desgaste de los neumáticos
@@ -145,35 +145,27 @@ public class InterfazIngeniero extends JFrame {
         desgasteNeumaticosLabel.setFont(font);
         desgasteNeumaticosLabel.setBounds(30, 30, 400, 50);
         panelDesgasteNeumaticos.add(desgasteNeumaticosLabel);
-        panelDesgasteNeumaticos.setBounds(250, 425, 450, 70);
+        panelDesgasteNeumaticos.setBounds(250, 475, 450, 70);
         panelPrincipal.add(panelDesgasteNeumaticos);
 
         // Panel de neumáticos para pits
         panelNeumaticos = new PanelNeumaticos();
 
         panelNeumaticos.setSize(500, 380);
-        panelNeumaticos.setBounds(250, 15, 450, 180);
+        panelNeumaticos.setBounds(600, 15, 400, 180);
        
         panelNeumaticos.setInterfazIngeniero(this);
         panelNeumaticos.BloquearSeleccionNeumaticos();
         panelPrincipal.add(panelNeumaticos);
 
-        // Panel para pronóstico de la carrera
-        JPanel panelPronosticoCarrera = new JPanel(null);
-        pronosticoCarreraLabel = new JLabel("Pronóstico:");
-        pronosticoCarreraLabel.setAlignmentX(CENTER_ALIGNMENT);
-        pronosticoCarreraLabel.setFont(font);
-        pronosticoCarreraLabel.setBounds(30, 30, 400, 50);
-        panelPronosticoCarrera.add(pronosticoCarreraLabel);
-        panelPronosticoCarrera.setBounds(250, 495, 450, 70);
-        panelPrincipal.add(panelPronosticoCarrera);
+       
 
         // Botón para preparar pitstop
         prepararPitstop = new JButton("Preparar Pitstop");
         prepararPitstop.setFont(font);
         prepararPitstop.setBackground(Color.BLACK);
         prepararPitstop.setForeground(Color.WHITE);
-        prepararPitstop.setBounds(380, 200, 200, 50);
+        prepararPitstop.setBounds(700, 220, 200, 50);
         panelPrincipal.add(prepararPitstop);
         prepararPitstop.addActionListener(e -> {
             llamarMecanicos();
@@ -186,7 +178,7 @@ public class InterfazIngeniero extends JFrame {
         confirmarPitstop.setFont(font);
         confirmarPitstop.setBackground(Color.BLACK);
         confirmarPitstop.setForeground(Color.WHITE);
-        confirmarPitstop.setBounds(380, 270, 200, 50);
+        confirmarPitstop.setBounds(700, 290, 200, 50);
         panelPrincipal.add(confirmarPitstop);
 
     
